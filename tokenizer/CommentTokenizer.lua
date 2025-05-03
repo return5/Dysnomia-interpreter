@@ -31,22 +31,33 @@ function CommentTokenizer.regularMultiLineComment(self,str)
 		self:incrI()
 		return true
 	end
+	self:consumeCurrentCharToStr(str)
 	return false
 end
 
 local function multiLineCommentEqualSignClosure(endingCount)
 	local runningCount = 0
 	return function(self,str)
-		write("checking for equal signs\n")
-		if self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("=") then
+		write("checking for equals. ending count is:",endingCount,"\n")
+		write("running count",runningCount,"\n")
+		write("current char is: ",self:getCurrentChar(),":\n")
+		if runningCount == endingCount and self:checkCurrentCharErrorOnLimit("]") then
 			self:consumeCurrentCharToStr(str)
+			self:consumeCurrentCharToStr(str)
+			self:addToken(CommentToken:new(self,concat(str)))
+			return true
+		elseif runningCount > 0 and self:checkCurrentCharErrorOnLimit("=") then
+			write("counting equal signs\n")
 			self:consumeCurrentCharToStr(str)
 			runningCount = runningCount + 1
-			if runningCount == endingCount and self:checkNextCharErrorOnLimit("]") then
-				self:incrI()
-				return true
-			end
+		elseif self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("=") then
+			write("found the ending ]\n")
+			self:consumeCurrentCharToStr(str)
+			self:consumeCurrentCharToStr(str)
+			write("after finding ]current char is: ",self:getCurrentChar(),"\n")
+			runningCount = runningCount + 1
 		else
+			self:consumeCurrentCharToStr(str)
 			runningCount = 0
 		end
 		return false
@@ -60,8 +71,8 @@ function CommentTokenizer:countMultiLineCommentEqualSigns(str)
 		self:consumeCurrentCharToStr(str)
 		endingCount = endingCount + 1
 	end
-	return multiLineCommentEqualSignClosure(endingCount)
-
+	if self:checkCurrentChar("[") then return multiLineCommentEqualSignClosure(endingCount) end
+	return CommentTokenizer.singleLineComment
 end
 
 --checking for multi line comments such as --[[ and --[=[
@@ -76,12 +87,12 @@ function CommentTokenizer:countCommentEndingChars(str)
 end
 
 function CommentTokenizer.singleLineComment(self,str)
-	if self:checkCurrentChar("\n") or self.i == self.limit then
-		str[#str + 1] = "\n"
+	if self:checkCurrentChar("\n") or self.i >= self.limit then
+		self:consumeCurrentCharToStr(str)
 		self:addToken(CommentToken:new(self,concat(str)))
-		self:incrI()
 		return true
 	end
+	self:consumeCurrentCharToStr(str)
 	return false
 end
 
@@ -97,9 +108,7 @@ function CommentTokenizer:loopOverComment()
 	self:setTokenStart()
 	self:incrI():incrI()
 	local ending <const> = self:getCommentEnding(str)
-	while not ending(self,str) do
-		self:consumeCurrentCharToStr(str)
-	end
+	while not ending(self,str) do end
 	return false
 end
 

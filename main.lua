@@ -21,8 +21,10 @@ local function strToCharArray(str)
 	return charArray
 end
 
+--[==  thisis astring == and this is too
+
 local function main()
-	local str <const> = "--[[ hello world i am a comment.] hello ]]  --this is another comment."
+	local str <const> = "--[==  ]=]a"
 	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
 	io.write("type of return is: ",type(tokens),"\n")
 	for i=1,#tokens,1 do

@@ -130,10 +130,18 @@ function Tokenizer:consumeCurrentCharToStr(str)
 	return self
 end
 
-function Tokenizer:checkNextCharErrorOnLimit(char)
-	if self:checkNextChar(char) then return true end
-	if self.i + 1 >= self.limit then error("reached end of file when searching for: " .. char) end
+function Tokenizer:checkCharErrorOnLimit(char,i)
+	if self:checkChar(i,char) then return true end
+	if i >= self.limit then error("reached end of file when searching for: " .. char) end
 	return false
+end
+
+function Tokenizer:checkCurrentCharErrorOnLimit(char)
+	return self:checkCharErrorOnLimit(char,self.i)
+end
+
+function Tokenizer:checkNextCharErrorOnLimit(char)
+	return self:checkCharErrorOnLimit(char,self.i + 1)
 end
 
 function Tokenizer:new(charArray)
