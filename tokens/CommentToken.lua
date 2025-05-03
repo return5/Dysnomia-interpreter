@@ -6,19 +6,19 @@
     Dysnomia Interpreter is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
-
 ]]
 
+local Token <const> = require('tokens.Token')
+local setmetatable <const> = setmetatable
 
-local Tokenizer <const> = {}
-Tokenizer.__index = Tokenizer
+local CommentToken <const> = {type = "comment"}
+CommentToken.__index = CommentToken
+setmetatable(CommentToken,Token)
 
-_ENV = Tokenizer
+_ENV = CommentToken
 
-
-
-function Tokenizer.tokenize()
-
+function CommentToken:new(tokenizer,str)
+	return setmetatable(Token:new(tokenizer,str),self)
 end
 
-return Tokenizer
+return CommentToken
