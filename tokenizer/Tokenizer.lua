@@ -81,43 +81,65 @@ function Tokenizer:incrI()
 	return self
 end
 
-function Tokenizer:getToken(i)
+function Tokenizer:getChar(i)
 	return self.fileArray[i]
 end
 
-function Tokenizer:checkToken(i,char)
-	return i < self.limit and self:checkToken(i,char)
+function Tokenizer.getCurrentChar()
+	return self:getChar(self.i)
 end
 
-function Tokenizer:checkCurrentToken(char)
-	return self:checkToken(self.i,char)
+function Tokenizer:consumeCurrentToken()
+	local char <const> = self:getChar(self.i)
+	self:incrI()
+	return char
 end
 
-function Tokenizer:checkNextToken(char)
-	return self:checkToken(self.i + 1,char)
+function Tokenizer:checkChar(i, char)
+	return i < self.limit and self:checkChar(i,char)
+end
+
+function Tokenizer:checkCurrentChar(char)
+	return self:checkChar(self.i,char)
+end
+
+function Tokenizer:checkNextChar(char)
+	return self:checkChar(self.i + 1,char)
+end
+
+function Tokenizer.regularMultiLineComment(self,str)
+	if self:checkCurrentChar("]") and self:checkNextChar("]") then
+		self:incrI()
+		str[#str + 1] = "]]"
+		self:addToken(CommentToken:new(self,str))
+		self:incrI()
+		return true
+	end
+	return false
 end
 
 --checking for multi line comments such as --[[ and --[=[
 function Tokenizer:countCommentEndingChars()
 	self:incrI()
-	if self:checkCurrentToken("[") then
-		return "]",0
+	if self:checkCurrentChar("[") then
+		return Tokenizer.regularMultiLineComment
 	end
 	self:incrI()
-	if self:checkCurrentToken("[") and self:checNextToken("=") then return "]", self:countChars("=") end
+	if self:checkCurrentChar("[") and self:checkNextChar("=") then return "]", self:countChars("=") end
 end
 
 function Tokenizer.singleLineComment(self,str)
-	if self:checkCurrentToken("\n") then
-		self:incrI()
+	if self:checkCurrentChar("\n") then
 		str[#str + 1] = "\n"
 		self.addToken(CommentToken:new(self,concat(str)))
+		self:incrI()
 		return true
 	end
+	return false
 end
 
 function Tokenizer:getCommentEnding()
-	if not self:checkCurrentToken("[") then return Tokenizer.singleLineComment end
+	if not self:checkCurrentChar("[") then return Tokenizer.singleLineComment end
 	return self:countCommentEndingChars()
 end
 
@@ -126,13 +148,19 @@ function Tokenizer:loopOverComment()
 	local str <const> = {'--'}
 	self:setTokenStart()
 	self:incrI():incrI()
-	local ending <const>, endingCount <const> = self:getCommentEnding()
+	local ending <const> = self:getCommentEnding()
+	for i = self.i,self.limit,1 do
+		if ending(self,str) then
+			return true
+		end
+		str[#str + 1] = self:getCurrentChar()
+	end
 end
 
 function Tokenizer:tokenizeFile()
 	local cont = true
 	while cont do
-		if self:checkCurrentToken("-") and self:checkNextToken('-') then
+		if self:checkCurrentChar("-") and self:checkNextChar('-') then
 			cont = self:loopOverComment()
 		end
 
