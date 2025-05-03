@@ -8,12 +8,14 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local CommentToken <const> = require('tokens.CommentToken')
+local TokenizerEnums <const> = require('tokenizer.TokenizerEnums')
 local concat <const> = table.concat
+local write <const> = io.write
+local error <const> = error
 
 local setmetatable <const> = setmetatable
 
-local Tokenizer <const> = {}
+local Tokenizer <const> = {type = TokenizerEnums.Tokenizer}
 Tokenizer.__index = Tokenizer
 _ENV = Tokenizer
 
@@ -70,6 +72,22 @@ local spaceSymbols <const> = {
 	['\r'] = true
 }
 
+function Tokenizer:copyValues(tokenizer)
+	self.charArray = tokenizer.charArray
+	self.tokens = tokenizer.tokens
+	self.i = tokenizer.i
+	self.limit = tokenizer.limit
+	self.tokenStartCol = tokenizer.tokenStartCol
+	self.tokenStartLine = tokenizer.tokenStartLine
+	self.line = tokenizer.line
+	return self
+end
+
+function Tokenizer:addToken(token)
+	self.tokens[#self.tokens + 1] = token
+	return self
+end
+
 function Tokenizer:setTokenStart()
 	self.tokenStartCol = self.i
 	self.tokenStartLine = self.line
@@ -82,7 +100,7 @@ function Tokenizer:incrI()
 end
 
 function Tokenizer:getChar(i)
-	return self.fileArray[i]
+	return self.charArray[i]
 end
 
 function Tokenizer:getCurrentChar()
@@ -96,7 +114,7 @@ function Tokenizer:consumeCurrentChar()
 end
 
 function Tokenizer:checkChar(i, char)
-	return i < self.limit and self:checkChar(i,char)
+	return self.charArray[i] == char
 end
 
 function Tokenizer:checkCurrentChar(char)
@@ -112,103 +130,14 @@ function Tokenizer:consumeCurrentCharToStr(str)
 	return self
 end
 
-function Tokenizer.regularMultiLineComment(self,str)
-	if self:checkCurrentChar("]") and self:checkNextChar("]") then
-		self:consumerCurrentCharToStr(str)
-		self:addToken(CommentToken:new(self,str))
-		self:incrI()
-		return true
-	end
+function Tokenizer:checkNextCharErrorOnLimit(char)
+	if self:checkNextChar(char) then return true end
+	if self.i + 1 >= self.limit then error("reached end of file when searching for: " .. char) end
 	return false
 end
 
-local function multiLineCommentEqualSignClosure(endingCount)
-	local runningCount = 0
-	return function(self,str)
-		if self:checkCurrentChar("=") then
-			self:consumeCurrentCharToStr(str)
-			runningCount = runningCount + 1
-			if runningCount == endingCount then
-				self:incrI()
-				return true
-			end
-		else
-			runningCount = 0
-		end
-		return false
-	end
-end
-
-function Tokenizer:countMultiLineCommentEqualSigns(str)
-	self:consumeCurrentCharToStr(str)
-	local endingCount = 1
-	while self:checkCurrentChar("=") do
-		self:consumeCurrentCharToStr(str)
-		endingCount = endingCount + 1
-	end
-	return multiLineCommentEqualSignClosure(endingCount)
-
-end
-
---checking for multi line comments such as --[[ and --[=[
-function Tokenizer:countCommentEndingChars(str)
-	self:consumerCurrentCharToStr(str)
-	if self:checkCurrentChar("[") then
-		self:consumerCurrentCharToStr(str)
-		return Tokenizer.regularMultiLineComment
-	end
-	if self:checkCurrentChar("=") then return self:countMultiLineCommentEqualSigns(str) end
-	return Tokenizer.singleLineComment
-end
-
-function Tokenizer.singleLineComment(self,str)
-	if self:checkCurrentChar("\n") then
-		str[#str + 1] = "\n"
-		self.addToken(CommentToken:new(self,concat(str)))
-		self:incrI()
-		return true
-	end
-	return false
-end
-
-function Tokenizer:getCommentEnding(str)
-	if not self:checkCurrentChar("[") then return Tokenizer.singleLineComment end
-	return self:countCommentEndingChars(str)
-end
-
-
-function Tokenizer:loopOverComment()
-	local str <const> = {'--'}
-	self:setTokenStart()
-	self:incrI():incrI()
-	local ending <const> = self:getCommentEnding(str)
-	for i = self.i,self.limit,1 do
-		if ending(self,str) then
-			return true
-		end
-		str[#str + 1] = self:getCurrentChar()
-	end
-	return false
-end
-
-function Tokenizer:tokenizeFile()
-	local cont = true
-	while cont do
-		if self:checkCurrentChar("-") and self:checkNextChar('-') then
-			cont = self:loopOverComment()
-		end
-
-	end
-	return self.tokens
-end
-
-function Tokenizer:new(fileArray)
-	return setmetatable({fileArray = fileArray,tokens = {},i = 1, limit = #fileArray,tokenStartCol = 1,tokenStartLine = 1,line = 1},self)
-end
-
-function Tokenizer.tokenize(fileArray)
-	local fileTokenizer <const> = Tokenizer:new(fileArray)
-	return fileTokenizer:tokenizeFile()
+function Tokenizer:new(charArray)
+	return setmetatable({charArray = charArray,tokens = {},i = 1, limit = #charArray,tokenStartCol = 1,tokenStartLine = 1,line = 1},self)
 end
 
 return Tokenizer

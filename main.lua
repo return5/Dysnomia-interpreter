@@ -11,10 +11,24 @@
 
 ]]
 
+local FileTokenizer <const> = require('tokenizer.FileTokenizer')
 
+local function strToCharArray(str)
+	local charArray <const> = {}
+	for char in str:gmatch(".") do
+		charArray[#charArray + 1] = char
+	end
+	return charArray
+end
 
 local function main()
-
+	local str <const> = "--[[ hello world i am a comment.] hello ]]  --this is another comment."
+	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
+	io.write("type of return is: ",type(tokens),"\n")
+	for i=1,#tokens,1 do
+		io.write(i,"::")
+		tokens[i]:print()
+	end
 end
 
 
