@@ -1,4 +1,5 @@
 return {
 	Tokenizer = "Tokenizer",
-	CommentTokenizer = 'CommentTokenizer'
+	CommentTokenizer = 'CommentTokenizer',
+	StringTokenizer = "StringTokenizer"
 }

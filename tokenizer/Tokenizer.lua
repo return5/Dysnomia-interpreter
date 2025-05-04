@@ -19,59 +19,6 @@ local Tokenizer <const> = {type = TokenizerEnums.Tokenizer}
 Tokenizer.__index = Tokenizer
 _ENV = Tokenizer
 
-local symbols <const> = {
-	['function'] = true,
-	['<'] = true,
-	['const'] = true,
-	['immutable'] = true,
-	['mutable'] = true,
-	['global'] = true,
-	['local'] = true,
-	['if'] = true,
-	['else'] = true,
-	['elseif'] = true,
-	['then'] = true,
-	['end'] = true,
-	['while'] = true,
-	['do'] = true,
-	['repeat'] = true,
-	['until'] = true,
-	['while'] = true,
-	['for'] = true,
-	['{'] = true,
-	['('] = true,
-	[';'] = true,
-	['return'] = true,
-	['='] = true,
-	['+'] = true,
-	['/'] = true,
-	['*'] = true,
-	['and'] = true,
-	['or'] = true,
-	['%'] = true,
-	['.'] = true,
-	[':'] = true,
-	['break'] = true,
-	['continue'] = true
-}
-
-local stringSymbols <const> = {
-	['['] = true,
-	['"'] = true,
-	["'"] = true
-}
-
-local commentSymbols <const> = {
-	['--'] = true,
-	['--[['] = true
-}
-
-local spaceSymbols <const> = {
-	[' '] = true,
-	['\t'] = true,
-	['\r'] = true
-}
-
 function Tokenizer:copyValues(tokenizer)
 	self.charArray = tokenizer.charArray
 	self.tokens = tokenizer.tokens
@@ -83,8 +30,8 @@ function Tokenizer:copyValues(tokenizer)
 	return self
 end
 
-function Tokenizer:addToken(token)
-	self.tokens[#self.tokens + 1] = token
+function Tokenizer:addToken(token,str)
+	self.tokens[#self.tokens + 1] = token:new(self,concat(str))
 	return self
 end
 
@@ -142,6 +89,10 @@ end
 
 function Tokenizer:checkNextCharErrorOnLimit(char)
 	return self:checkCharErrorOnLimit(char,self.i + 1)
+end
+
+function Tokenizer:loop(ending,str)
+	while not ending(self,str) do end
 end
 
 function Tokenizer:new(charArray)

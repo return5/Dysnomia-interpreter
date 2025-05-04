@@ -8,11 +8,12 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
+local TokenEnums <const> = require('tokens.TokenEnums')
 
 local setmetatable <const> = setmetatable
 local write <const> = io.write
 
-local Token <const> = {type = "Token"}
+local Token <const> = {type = TokenEnums.Token}
 Token.__index = Token
 
 _ENV = Token

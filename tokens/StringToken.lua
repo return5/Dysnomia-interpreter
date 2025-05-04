@@ -12,14 +12,14 @@ local TokenEnums <const> = require('tokens.TokenEnums')
 local Token <const> = require('tokens.Token')
 local setmetatable <const> = setmetatable
 
-local CommentToken <const> = {type = TokenEnums.Comment}
-CommentToken.__index = CommentToken
-setmetatable(CommentToken,Token)
+local StringToken <const> = {type = TokenEnums.String}
+StringToken.__index = StringToken
+setmetatable(StringToken,Token)
 
-_ENV = CommentToken
+_ENV = StringToken
 
-function CommentToken:new(tokenizer,str)
+function StringToken:new(tokenizer,str)
 	return setmetatable(Token:new(tokenizer,str),self)
 end
 
-return CommentToken
+return StringToken

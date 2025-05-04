@@ -15,7 +15,6 @@ local CommentToken <const> = require('tokens.CommentToken')
 
 local setmetatable <const> = setmetatable
 local concat <const> = table.concat
-local write <const> = io.write
 
 local CommentTokenizer <const> = {type = TokenizerEnums.CommentTokenizer}
 setmetatable(CommentTokenizer,Tokenizer)
@@ -27,7 +26,7 @@ function CommentTokenizer.regularMultiLineComment(self,str)
 	if self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("]") then
 		self:consumeCurrentCharToStr(str)
 		self:consumeCurrentCharToStr(str)
-		self:addToken(CommentToken:new(self,concat(str)))
+		self:addToken(CommentToken,str)
 		self:incrI()
 		return true
 	end
@@ -38,23 +37,17 @@ end
 local function multiLineCommentEqualSignClosure(endingCount)
 	local runningCount = 0
 	return function(self,str)
-		write("checking for equals. ending count is:",endingCount,"\n")
-		write("running count",runningCount,"\n")
-		write("current char is: ",self:getCurrentChar(),":\n")
 		if runningCount == endingCount and self:checkCurrentCharErrorOnLimit("]") then
 			self:consumeCurrentCharToStr(str)
 			self:consumeCurrentCharToStr(str)
-			self:addToken(CommentToken:new(self,concat(str)))
+			self:addToken(CommentToken,str)
 			return true
 		elseif runningCount > 0 and self:checkCurrentCharErrorOnLimit("=") then
-			write("counting equal signs\n")
 			self:consumeCurrentCharToStr(str)
 			runningCount = runningCount + 1
 		elseif self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("=") then
-			write("found the ending ]\n")
 			self:consumeCurrentCharToStr(str)
 			self:consumeCurrentCharToStr(str)
-			write("after finding ]current char is: ",self:getCurrentChar(),"\n")
 			runningCount = runningCount + 1
 		else
 			self:consumeCurrentCharToStr(str)
@@ -89,7 +82,7 @@ end
 function CommentTokenizer.singleLineComment(self,str)
 	if self:checkCurrentChar("\n") or self.i >= self.limit then
 		self:consumeCurrentCharToStr(str)
-		self:addToken(CommentToken:new(self,concat(str)))
+		self:addToken(CommentToken,str)
 		return true
 	end
 	self:consumeCurrentCharToStr(str)
@@ -103,20 +96,17 @@ end
 
 
 function CommentTokenizer:loopOverComment()
-	write("looping over coment\n")
 	local str <const> = {'--'}
 	self:setTokenStart()
 	self:incrI():incrI()
 	local ending <const> = self:getCommentEnding(str)
-	while not ending(self,str) do end
-	return false
+	self:loop(ending,str)
 end
 
-function CommentTokenizer.tokenizeComment(tokenizer)
+function CommentTokenizer:tokenizeComment(tokenizer)
 	CommentTokenizer:copyValues(tokenizer)
-	local returnVal <const> = CommentTokenizer:loopOverComment()
+	CommentTokenizer:loopOverComment()
 	tokenizer:copyValues(CommentTokenizer)
-	return returnVal
 end
 
-return {tokenizeComment = CommentTokenizer.tokenizeComment}
+return CommentTokenizer
