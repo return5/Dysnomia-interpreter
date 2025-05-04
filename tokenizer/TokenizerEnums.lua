@@ -17,5 +17,7 @@ return {
 	MultiLineStringTokenizer = "MultiLineString",
 	StringTokenizer = "StringTokenizer",
 	PlusTokenizer = "PlusTokenizer",
-	MinusTokenizer = "MinusTokenizer"
+	MinusTokenizer = "MinusTokenizer",
+	StarTokenizer = "StarTokenizer",
+	SlashTokenizer = "SlashTokenizer"
 }

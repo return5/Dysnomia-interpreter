@@ -24,7 +24,7 @@ end
 --[==  thisis astring == and this is too
 
 local function main()
-	local str <const> = '1 - 2 = 3 and so does 1 -= 2 equals three adding 1 + 2 and assignment 2 += 3 and then 3 -= 4'
+	local str <const> = '1 - 2 = 3 and so does 1 -= 2 equals three adding 1 + 2 and assignment 2 += 3 and then 3 -= 4 trying out slash 1 / 2 and 3 /3  now star 5 *6 and 5 *= 6'
 	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
 	for i=1,#tokens,1 do
 		io.write(i,":: ")

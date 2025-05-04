@@ -8,16 +8,19 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-return {
-	Comment = "Comment",
-	String = "String",
-	Token = "Token",
-	Plus = "Plus",
-	PlusAssignment = "PlusAssignment",
-	Minus = "Minus",
-	MinusAssignment = "MinusAssignment",
-	Slash = "Slash",
-	SlashAssignment = "SlashAssignment",
-	Star = "Star",
-	StarAssignment = "StarAssignment"
-}
+local TokenEnums <const> = require('tokens.TokenEnums')
+
+local Token <const> = require('tokens.Token')
+local setmetatable <const> = setmetatable
+
+local SlashToken <const> = {type = TokenEnums.Slash}
+SlashToken.__index = SlashToken
+setmetatable(SlashToken,Token)
+
+_ENV = SlashToken
+
+function SlashToken:new(tokenizer,str)
+	return setmetatable(Token:new(tokenizer,str),self)
+end
+
+return SlashToken
