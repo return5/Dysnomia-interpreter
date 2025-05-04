@@ -1,4 +1,3 @@
-
 --[[
     This file is part of Dysnomia interpreter.
 
@@ -8,7 +7,6 @@
 
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
-
 
 local Tokenizer <const> = require('tokenizer.Tokenizer')
 local TokenizeComment <const> = require('tokenizer.comments.TokenizeComment')

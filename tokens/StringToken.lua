@@ -7,6 +7,7 @@
 
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
+
 local TokenEnums <const> = require('tokens.TokenEnums')
 
 local Token <const> = require('tokens.Token')

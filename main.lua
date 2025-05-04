@@ -25,7 +25,6 @@ end
 
 local function main()
 	local str <const> = '[[this is a multiline string\nthis is next line]]'
-
 	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
 	for i=1,#tokens,1 do
 		io.write(i,":: ")
