@@ -32,7 +32,7 @@ end
 
 function TokenizeComment.getTokenizer(tokenizer,str)
 	if not tokenizer:checkCurrentChar("[") then return SingleLimeCommentTokenizer end
-	return TokenizeComment.countCommentEndingChars(str,tokenizer)
+	return TokenizeComment.countCommentEndingChars(tokenizer,str)
 end
 
 function TokenizeComment.tokenizeComment(tokenizer)
