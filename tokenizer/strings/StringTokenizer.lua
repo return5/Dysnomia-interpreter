@@ -36,6 +36,7 @@ function StringTokenizer:tokenizeString(tokenizer)
 	self:copyValues(tokenizer)
 	self:loopOverString(tokenizer:getCurrentChar())
 	tokenizer:copyValues(self)
+	return true
 end
 
 return StringTokenizer

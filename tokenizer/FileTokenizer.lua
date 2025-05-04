@@ -11,7 +11,7 @@
 
 
 local Tokenizer <const> = require('tokenizer.Tokenizer')
-local CommentTokenizer <const> = require('tokenizer.CommentTokenizer')
+local CommentTokenizer <const> = require('tokenizer.comments.CommentTokenizer')
 local StringTokenizer <const> = require('tokenizer.strings.StringTokenizer')
 local SingleQuoteStringTokenizer <const> = require('tokenizer.strings.SingleQuoteStringTokenizer')
 
