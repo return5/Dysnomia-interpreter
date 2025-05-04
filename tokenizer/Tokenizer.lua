@@ -19,6 +19,14 @@ local Tokenizer <const> = {type = TokenizerEnums.Tokenizer}
 Tokenizer.__index = Tokenizer
 _ENV = Tokenizer
 
+function Tokenizer:loopThroughSpaces()
+	local currentChar = self:getCurrentChar()
+	while currentChar == " " or currentChar == "\t" do
+		self:consumeCurrentChar()
+	end
+	return self
+end
+
 function Tokenizer:newLine()
 	self:consumeCurrentChar()
 	self:incrLine()

@@ -10,43 +10,38 @@
 
 local TokenizerEnums <const> = require('tokenizer.TokenizerEnums')
 local Tokenizer <const> = require('tokenizer.Tokenizer')
-local StringToken <const> = require('tokens.StringToken')
+local PlusToken <const> = require('tokens.math.PlusToken')
+local PlusAssignmentToken <const> = require('tokens.math.PlusAssignment')
 
 local setmetatable <const> = setmetatable
 
-local StringTokenizer <const> = {type = TokenizerEnums.StringTokenizer}
-setmetatable(StringTokenizer,Tokenizer)
-StringTokenizer.__index = StringTokenizer
+local PlusTokenizer <const> = {type = TokenizerEnums.PlusTokenizer}
+setmetatable(PlusTokenizer,Tokenizer)
+PlusTokenizer.__index = PlusTokenizer
 
-_ENV = StringTokenizer
+_ENV = PlusTokenizer
 
-function StringTokenizer:checkForEndOfString()
+function PlusTokenizer:checkForEndOfPlus()
 	return self:checkCurrentCharErrorOnLimit('"')
 end
 
-function StringTokenizer:ending(str)
-	if self:checkForEndOfString(str) then
-		self:consumeCurrentCharToStr(str)
-		self:addToken(StringToken,str)
-		--self:incrI()
-		return true
-	end
-	self:consumeCurrentCharToStr(str)
-	return false
-end
-
-function StringTokenizer:loopOverString(strChar)
-	local str <const> = {strChar}
+function PlusTokenizer:loop()
 	self:setTokenStart()
-	self:incrI()
-	self:loop(self.ending,str)
+	local str <const> = {self:consumeCurrentChar()}
+	if self:getCurrentChar() == "=" then
+		self:consumeCurrentCharToStr(str)
+		self:addToken(PlusAssignmentToken,str)
+	else
+		self:addToken(PlusToken,str)
+	end
+	return true
 end
 
-function StringTokenizer:tokenizeString(tokenizer)
+function PlusTokenizer:tokenizePlus(tokenizer)
 	self:copyValues(tokenizer)
-	self:loopOverString(self:getCurrentChar())
+	self:loop()
 	tokenizer:copyValues(self)
 	return true
 end
 
-return StringTokenizer
+return PlusTokenizer

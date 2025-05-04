@@ -13,6 +13,7 @@ local TokenizeComment <const> = require('tokenizer.comments.TokenizeComment')
 local StringTokenizer <const> = require('tokenizer.strings.StringTokenizer')
 local SingleQuoteStringTokenizer <const> = require('tokenizer.strings.SingleQuoteStringTokenizer')
 local MultiLineStringTokenizer <const> = require('tokenizer.strings.MultiLineStringTokenizer')
+local PlusTokenizer <const> = require('tokenizer.math.PlusTokenizer')
 
 local FileTokenizer <const> = {}
 FileTokenizer.__index = FileTokenizer
@@ -48,15 +49,20 @@ local function consumeSpace(tokenizer)
 	return true
 end
 
+local function add(tokenizer)
+	return PlusTokenizer:tokenizePlus(tokenizer)
+end
+
 local charsToTokenize <const> = {
 	['-'] = checkForComment,
-	["'"] = function(tokenizer) SingleQuoteStringTokenizer:tokenizeString(tokenizer) end,
-	['"'] = function(tokenizer) StringTokenizer:tokenizeString(tokenizer) end,
+	["'"] = function(tokenizer) return SingleQuoteStringTokenizer:tokenizeString(tokenizer) end,
+	['"'] = function(tokenizer) return StringTokenizer:tokenizeString(tokenizer) end,
 	["\n"] = consumeNewLine,
 	["["] = checkMultiLineString,
 	[' '] = consumeSpace,
 	['\t'] = consumeSpace,
-	['\r'] = consumeSpace
+	['\r'] = consumeSpace,
+	['+'] = add,
 }
 
 function FileTokenizer.tokenizeFile(charArray)
