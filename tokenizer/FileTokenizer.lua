@@ -13,7 +13,7 @@
 local Tokenizer <const> = require('tokenizer.Tokenizer')
 local CommentTokenizer <const> = require('tokenizer.comments.CommentTokenizer')
 local StringTokenizer <const> = require('tokenizer.strings.StringTokenizer')
-local SingleQuoteStringTokenizer <const> = require('tokenizer.strings.SingleQuoteStringTokenizer')
+local TokenizeComment <const> = require('tokenizer.comments.TokenizeComment')
 
 local FileTokenizer <const> = {}
 FileTokenizer.__index = FileTokenizer
@@ -35,7 +35,7 @@ end
 
 local charsToTokenize <const> = {
 	['-'] = checkForComment,
-	["'"] = function(tokenizer) SingleQuoteStringTokenizer:tokenizeString(tokenizer) end,
+	["'"] = function(tokenizer) TokenizeComment.tokenizeComment(tokenizer) end,
 	['"'] = function(tokenizer) StringTokenizer:tokenizeString(tokenizer) end,
 	["\n"] = consumeNewLine
 }
