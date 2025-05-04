@@ -9,16 +9,33 @@
 ]]
 
 local TokenizerEnums <const> = require('tokenizer.TokenizerEnums')
-local MathTokenizer <const> = require('tokenizer.math.MathTokenizer')
-local PlusToken <const> = require('tokens.math.PlusToken')
-local PlusAssignmentToken <const> = require('tokens.math.PlusAssignmentToken')
+local Tokenizer <const> = require('tokenizer.Tokenizer')
 
 local setmetatable <const> = setmetatable
 
-local PlusTokenizer <const> = {type = TokenizerEnums.PlusTokenizer,token = PlusToken,assignmentToken = PlusAssignmentToken}
-PlusTokenizer.__index = PlusTokenizer
-setmetatable(PlusTokenizer,MathTokenizer)
+local MathTokenizer <const> = {type = TokenizerEnums.MathTokenizer}
+MathTokenizer.__index = MathTokenizer
+setmetatable(MathTokenizer,Tokenizer)
 
-_ENV = PlusTokenizer
+_ENV = MathTokenizer
 
-return PlusTokenizer
+function MathTokenizer:loop()
+	self:setTokenStart()
+	local str <const> = {self:consumeCurrentChar()}
+	if self:getCurrentChar() == "=" then
+		self:consumeCurrentCharToStr(str)
+		self:addToken(self.assignmentToken,str)
+	else
+		self:addToken(self.token,str)
+	end
+	return true
+end
+
+function MathTokenizer:tokenize(tokenizer)
+	self:copyValues(tokenizer)
+	self:loop()
+	tokenizer:copyValues(self)
+	return true
+end
+
+return MathTokenizer

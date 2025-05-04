@@ -14,6 +14,7 @@ local StringTokenizer <const> = require('tokenizer.strings.StringTokenizer')
 local SingleQuoteStringTokenizer <const> = require('tokenizer.strings.SingleQuoteStringTokenizer')
 local MultiLineStringTokenizer <const> = require('tokenizer.strings.MultiLineStringTokenizer')
 local PlusTokenizer <const> = require('tokenizer.math.PlusTokenizer')
+local MinusTokenizer <const> = require('tokenizer.math.MinusTokenizer')
 
 local FileTokenizer <const> = {}
 FileTokenizer.__index = FileTokenizer
@@ -25,7 +26,7 @@ local function checkForComment(tokenizer)
 	if tokenizer:checkNextCharErrorOnLimit("-") then
 		TokenizeComment.tokenizeComment(tokenizer)
 	else
-		tokenizer:consumerCurrentChar() --TODO
+		MinusTokenizer:tokenize(tokenizer)
 	end
 	return true
 end
@@ -39,7 +40,7 @@ local function checkMultiLineString(tokenizer)
 	if tokenizer:checkNextCharErrorOnLimit("[") then
 		MultiLineStringTokenizer:tokenizeString(tokenizer)
 	else
-		tokenizer:consumerCurrentChar() --TODO
+		tokenizer:consumeCurrentChar() --TODO
 	end
 	return true
 end
@@ -49,8 +50,8 @@ local function consumeSpace(tokenizer)
 	return true
 end
 
-local function add(tokenizer)
-	return PlusTokenizer:tokenizePlus(tokenizer)
+local function plus(tokenizer)
+	return PlusTokenizer:tokenize(tokenizer)
 end
 
 local charsToTokenize <const> = {
@@ -62,7 +63,7 @@ local charsToTokenize <const> = {
 	[' '] = consumeSpace,
 	['\t'] = consumeSpace,
 	['\r'] = consumeSpace,
-	['+'] = add,
+	['+'] = plus,
 }
 
 function FileTokenizer.tokenizeFile(charArray)

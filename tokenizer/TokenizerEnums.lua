@@ -16,5 +16,6 @@ return {
 	MultiLineEqualSignCommentTokenizer = "MultiLineEqualSignCommentTokenizer",
 	MultiLineStringTokenizer = "MultiLineString",
 	StringTokenizer = "StringTokenizer",
-	AddTokenizer = "AddTokenizer"
+	PlusTokenizer = "PlusTokenizer",
+	MinusTokenizer = "MinusTokenizer"
 }
