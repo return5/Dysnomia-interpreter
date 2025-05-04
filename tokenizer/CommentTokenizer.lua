@@ -89,10 +89,19 @@ function CommentTokenizer:countCommentEndingChars(str)
 	return CommentTokenizer.singleLineComment
 end
 
+function CommentTokenizer:addCommentToken(str)
+	self:addCurrentCharToStr(str)
+	self:addToken(CommentToken,str)
+	return self
+end
+
 function CommentTokenizer.singleLineComment(self,str)
-	if self:checkCurrentChar("\n") or self.i >= self.limit then
-		self:consumeCurrentCharToStr(str)
-		self:addToken(CommentToken,str)
+	if self:checkCurrentChar("\n") then
+		self:addCommentToken(str):newLine()
+		return true
+	end
+	if self.i >= self.limit then
+		self:addCommentToken(str):incrI()
 		return true
 	end
 	self:consumeCurrentCharToStr(str)

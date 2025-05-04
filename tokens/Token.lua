@@ -23,7 +23,7 @@ function Token:print()
 end
 
 function Token:new(tokenizer,str)
-	return setmetatable({str = str,startCol = tokenizer.tokenStartCol,endCol = tokenizer.currentCol,startLine = tokenizer.tokenStartLine,endLine = tokenizer.line},self)
+	return setmetatable({str = str,startCol = tokenizer.tokenStartCol,endCol = tokenizer.currentCol - 1,startLine = tokenizer.tokenStartLine,endLine = tokenizer.line},self)
 end
 
 return Token

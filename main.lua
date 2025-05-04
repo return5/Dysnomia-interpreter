@@ -24,7 +24,8 @@ end
 --[==  thisis astring == and this is too
 
 local function main()
-	local str <const> = '--[==[this is a string \n--this is a comment]==]'
+	local str <const> = '--[==[this is a string \n--this is a comment]==]\n --this is single line comment \n "this is string" \n--this is ending comment\n "this is yet another string"'
+
 	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
 	for i=1,#tokens,1 do
 		io.write(i,":: ")
