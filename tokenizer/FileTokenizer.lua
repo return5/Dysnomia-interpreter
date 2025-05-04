@@ -26,10 +26,12 @@ local function checkForComment(tokenizer)
 	else
 		tokenizer:consumerCurrentChar() --TODO
 	end
+	return true
 end
 
 local function consumeNewLine(tokenizer)
 	tokenizer:newLine()
+	return true
 end
 
 local function checkMultiLineString(tokenizer)
@@ -38,6 +40,12 @@ local function checkMultiLineString(tokenizer)
 	else
 		tokenizer:consumerCurrentChar() --TODO
 	end
+	return true
+end
+
+local function consumeSpace(tokenizer)
+	tokenizer:consumeCurrentChar()
+	return true
 end
 
 local charsToTokenize <const> = {
@@ -45,7 +53,10 @@ local charsToTokenize <const> = {
 	["'"] = function(tokenizer) SingleQuoteStringTokenizer:tokenizeString(tokenizer) end,
 	['"'] = function(tokenizer) StringTokenizer:tokenizeString(tokenizer) end,
 	["\n"] = consumeNewLine,
-	["["] = checkMultiLineString
+	["["] = checkMultiLineString,
+	[' '] = consumeSpace,
+	['\t'] = consumeSpace,
+	['\r'] = consumeSpace
 }
 
 function FileTokenizer.tokenizeFile(charArray)
