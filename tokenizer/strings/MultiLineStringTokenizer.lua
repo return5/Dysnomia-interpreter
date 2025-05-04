@@ -13,14 +13,21 @@ local StringTokenizer <const> = require('tokenizer.strings.StringTokenizer')
 
 local setmetatable <const> = setmetatable
 
-local SingleQuoteStringTokenizer <const> = {type = TokenizerEnums.SingleQuoteStringTokenizer}
-setmetatable(SingleQuoteStringTokenizer,StringTokenizer)
-SingleQuoteStringTokenizer.__index = SingleQuoteStringTokenizer
+local MultiLineStringTokenizer <const> = {type = TokenizerEnums.MultiLineStringTokenizer}
+setmetatable(MultiLineStringTokenizer,StringTokenizer)
+MultiLineStringTokenizer.__index = MultiLineStringTokenizer
 
-_ENV = SingleQuoteStringTokenizer
+_ENV = MultiLineStringTokenizer
 
-function SingleQuoteStringTokenizer:checkForEndOfString()
-	return self:checkCurrentCharErrorOnLimit("'")
+function MultiLineStringTokenizer:checkForEndOfString(str)
+	if self:checkCurrentCharErrorOnLimit("\n") then
+		self:addCurrentCharToStr(str)
+		self:newLine()
+	elseif self:checkCurrentCharErrorOnLimit("]") and self:checkNextCharErrorOnLimit("]") then
+		self:consumeCurrentCharToStr(str)
+		return true
+	end
+	return false
 end
 
-return SingleQuoteStringTokenizer
+return MultiLineStringTokenizer

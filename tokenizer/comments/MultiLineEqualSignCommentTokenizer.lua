@@ -32,7 +32,7 @@ function MultiLineEqualSignCommentTokenizer.ending(self,str)
 		self:consumeCurrentCharToStr(str)
 		self.runningCount = self.runningCount + 1
 	else
-		if self:checkCurrentChar("\n") then
+		if self:checkCurrentCharErrorOnLimit("\n") then
 			self:addCurrentCharToStr(str)
 			self:newLine()
 		else
