@@ -24,10 +24,10 @@ end
 --[==  thisis astring == and this is too
 
 local function main()
-	local str <const> = '"this is a string" \n--this is a comment'
+	local str <const> = '--[==[this is a string \n--this is a comment]==]'
 	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
 	for i=1,#tokens,1 do
-		io.write(i,"::")
+		io.write(i,":: ")
 		tokens[i]:print()
 	end
 end

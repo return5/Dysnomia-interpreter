@@ -19,11 +19,11 @@ Token.__index = Token
 _ENV = Token
 
 function Token:print()
-	write(self.type," :: ",self.str," :: ",self.startLine,":",self.endLine," :: ",self.startCol,":",self.endCol,"\n")
+	write(self.type," :: ",self.str," :: ",self.startLine,":",self.startCol," :: ",self.endLine,":",self.endCol,"\n")
 end
 
 function Token:new(tokenizer,str)
-	return setmetatable({str = str,startCol = tokenizer.tokenStartCol,endCol = tokenizer.i,startLine = tokenizer.tokenStartLine,endLine = tokenizer.line},self)
+	return setmetatable({str = str,startCol = tokenizer.tokenStartCol,endCol = tokenizer.currentCol,startLine = tokenizer.tokenStartLine,endLine = tokenizer.line},self)
 end
 
 return Token

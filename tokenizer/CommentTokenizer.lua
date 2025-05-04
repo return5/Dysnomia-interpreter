@@ -30,7 +30,12 @@ function CommentTokenizer.regularMultiLineComment(self,str)
 		self:incrI()
 		return true
 	end
-	self:consumeCurrentCharToStr(str)
+	if self:checkCurrentChar("\n") then
+		self:addCurrentCharToStr(str)
+		self:newLine()
+	else
+		self:consumeCurrentCharToStr(str)
+	end
 	return false
 end
 
@@ -50,7 +55,12 @@ local function multiLineCommentEqualSignClosure(endingCount)
 			self:consumeCurrentCharToStr(str)
 			runningCount = runningCount + 1
 		else
-			self:consumeCurrentCharToStr(str)
+			if self:checkCurrentChar("\n") then
+				self:addCurrentCharToStr(str)
+				self:newLine()
+			else
+				self:consumeCurrentCharToStr(str)
+			end
 			runningCount = 0
 		end
 		return false
@@ -93,7 +103,6 @@ function CommentTokenizer:getCommentEnding(str)
 	if not self:checkCurrentChar("[") then return CommentTokenizer.singleLineComment end
 	return self:countCommentEndingChars(str)
 end
-
 
 function CommentTokenizer:loopOverComment()
 	local str <const> = {'--'}

@@ -29,10 +29,15 @@ local function checkForComment(tokenizer)
 	end
 end
 
+local function consumeNewLine(tokenizer)
+	tokenizer:newLine()
+end
+
 local charsToTokenize <const> = {
 	['-'] = checkForComment,
 	["'"] = function(tokenizer) SingleQuoteStringTokenizer:tokenizeString(tokenizer) end,
 	['"'] = function(tokenizer) StringTokenizer:tokenizeString(tokenizer) end,
+	["\n"] = consumeNewLine
 }
 
 function FileTokenizer.tokenizeFile(charArray)
