@@ -93,6 +93,11 @@ function Scanner:checkNextCharErrorOnLimit(char)
 	return self:checkNextChar(char)
 end
 
+function Scanner:checkCurrentCharErrorOnLimit(char)
+	self:errorOnLimit(self.i)
+	return self:checkCurrentChar(char)
+end
+
 function Scanner:singleLineCommentEnding(str)
 	if self:checkCurrentChar("\n") then
 		self:addToken(TokenEnums.Comment,str):newLine()
