@@ -162,7 +162,7 @@ function Scanner:countMultiLineCommentEqualSigns(str)
 end
 
 --checking for multi line comments such as --[[ and --[=[
-function Scanner:getMultiLineEnding(str)
+function Scanner:getMultiLineCommentEnding(str)
 	self:addCharToStr(str)
 	if self:checkCurrentChar("[") then
 		self:addCharToStr(str)
@@ -172,17 +172,17 @@ function Scanner:getMultiLineEnding(str)
 	return self.singleLineCommentEnding
 end
 
-function Scanner:getCommentEndingFunc()
+function Scanner:getCommentEndingFunc(str)
 	if not self:checkCurrentChar("[") then
 		return Scanner.singleLineCommentEnding
 	end
-	return self:getMultiLineCommentEnding()
+	return self:getMultiLineCommentEnding(str)
 end
 
 function Scanner:scanComment()
 	self:setTokenStart()
 	local str <const> = {self:consumeCurrentChar(),self:consumeCurrentChar()}
-	local commentEnding <const> = self:getCommentEndingFunc()
+	local commentEnding <const> = self:getCommentEndingFunc(str)
 	return self:loopThroughToken(commentEnding,str)
 end
 
