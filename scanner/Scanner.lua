@@ -282,30 +282,30 @@ function Scanner:curlyBracket()
 	self:simpleToken(TokenEnums.OpenCurlyBracket)
 end
 
-function Scanner:math(mathToken,updateToken)
+function Scanner:twoCharToken(singleCharToken,twoCharToken,char)
 	self:setTokenStart()
 	local str <const> = {self:consumeCurrentChar()}
-	if self:checkCurrentCharErrorOnLimit("=") then
+	if self:checkCurrentCharErrorOnLimit(char) then
 		self:addCharToStr(str)
-		return self:addToken(updateToken,str)
+		return self:addToken(twoCharToken,str)
 	end
-	return self:addToken(mathToken,str)
+	return self:addToken(singleCharToken,str)
 end
 
 function Scanner:negativeSign()
-	return self:math(TokenEnums.Minus,TokenEnums.MinusAssignment)
+	return self:twoCharToken(TokenEnums.Minus,TokenEnums.MinusAssignment,"=")
 end
 
 function Scanner:plus()
-	return self:math(TokenEnums.Plus,TokenEnums.PlusAssignment)
+	return self:twoCharToken(TokenEnums.Plus,TokenEnums.PlusAssignment,"=")
 end
 
 function Scanner:slash()
-	return self:math(TokenEnums.Slash,TokenEnums.SlashAssignment)
+	return self:twoCharToken(TokenEnums.Slash,TokenEnums.SlashAssignment,"=")
 end
 
 function Scanner:star()
-	return self:math(TokenEnums.Star,TokenEnums.StarAssignment)
+	return self:twoCharToken(TokenEnums.Star,TokenEnums.StarAssignment,"=")
 end
 
 function Scanner:curlyBracket()
@@ -344,6 +344,21 @@ function Scanner:comma()
     return self:simpleToken(TokenEnums.comma)
 end
 
+function Scanner:bang()
+    return self:twoCharToken(TokenEnums.Bang,TokenEnums.BangEquals,"=")
+end
+
+function Scanner:lessThan()
+    return self:twoCharToken(TokenEnums.LessThan,TokenEnums.LessThanEquals,"=")
+end
+
+function Scanner:greaterThan()
+    return self:twoCharToken(TokenEnums.GreaterThan,TokenEnums.GreaterThanEquals,"=")
+end
+
+function Scanner:equal()
+    return self:twoCharToken(TokenEnums.Equal,TokenEnums.EqualEquals,"=")
+end
 
 local charsToTokenize <const> = {
 	['-'] = Scanner.minus,
@@ -366,7 +381,10 @@ local charsToTokenize <const> = {
 	[";"] = Scanner.semiColon,
 	["."] = Scanner.period,
 	[","] = Scanner.comma,
-
+	["!"] = Scanner.bang,
+	["<"] = Scanner.lessThan,
+	[">"] = Scanner.greaterThan,
+	["="] = Scanner.equal,
 }
 
 function Scanner:scanFile()

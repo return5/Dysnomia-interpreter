@@ -29,5 +29,13 @@ return {
 	Comma = "Comma",
 	Colon = "Colon",
 	SemiColon = "SemiColon",
-	Period = "Period"
+	Period = "Period",
+	Bang = "Bang",
+	BangEquals = "BangEquals",
+	LessThan = "LessThan",
+	LessThanEquals = "LessThanEquals",
+	GreaterThan = "GreaterThan",
+	GreaterThanEquals = "GreaterThanEquals",
+	Equal = "Equal",
+	EqualEquals = "EqualEquals",
 }
