@@ -227,16 +227,17 @@ function Scanner:incrI()
 end
 
 function Scanner:scanString(strEnding)
+	self:incrI()
 	self:setTokenStart()
-	local str <const> = {self:consumeCurrentChar()}
+	local str <const> = {}
 	return self:loopThroughToken(strEnding,str)
 end
 
 local function stringEnding(char)
 	return function(self,str)
 		if self:checkCurrentCharErrorOnLimit(char) and not self:checkPreviousChar("\\") then
-			self:addCharToStr(str)
 			self:addToken(TokenEnums.String,str)
+			self:incrI()
 			return true
 		end
 		self:addCharToStr(str)
@@ -252,12 +253,32 @@ function Scanner:doubleQuote()
 	return self:scanString(stringEnding('"'))
 end
 
+function Scanner:multiLineStringEnding(str)
+	if self:checkCurrentCharErrorOnLimit("]") and not self:checkPreviousChar("%") and self:checkNextCharErrorOnLimit("]") then
+		self:addToken(TokenEnums.String,str)
+		self:incrI():incrI()
+		return true
+	end
+	self:addCharToStr(str)
+	return false
+end
+
+function Scanner:multiLineString()
+	return self:scanString(Scanner.multiLineStringEnding)
+end
+
+function Scanner:bracket()
+	if self:checkNextCharErrorOnLimit('[') then
+		return self:incrI():multiLineString()
+	end
+end
+
 local charsToTokenize <const> = {
 	['-'] = Scanner.minus,
 	["'"] = Scanner.singleQuote,
 	['"'] = Scanner.doubleQuote,
 	["\n"] = Scanner.newLine,
-	["["] = Scanner.squareBracket,
+	["["] = Scanner.bracket,
 	[' '] = Scanner.consumeCurrentChar,
 	['\t'] = Scanner.consumeCurrentChar,
 	['\r'] = Scanner.consumeCurrentChar,
