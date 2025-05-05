@@ -38,5 +38,7 @@ return {
 	GreaterThanEquals = "GreaterThanEquals",
 	Equal = "Equal",
 	EqualEquals = "EqualEquals",
-	Digit = "Digit"
+	Digit = "Digit",
+	Identifier = "Identifier",
+	And = "And"
 }

@@ -8,12 +8,13 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local TokenEnums <const> = require('token.TokenEnums')
+local TokenEnum <const> = require('token.TokenEnum')
 local Token <const> = require('token.Token')
 local TokenCoords <const> = require('token.TokenCoords')
 
 local concat <const> = table.concat
 local error <const> = error
+local length <const> = string.len
 local write = io.write
 
 local setmetatable <const> = setmetatable
@@ -76,7 +77,7 @@ function Scanner:addCharToStr(str)
 end
 
 function Scanner:checkLimit()
-	return self.i >= self.limit
+	return self.i > self.limit
 end
 
 function Scanner:errorOnLimit(i)
@@ -112,12 +113,12 @@ end
 
 function Scanner:singleLineCommentEnding(str)
 	if self:checkCurrentChar("\n") then
-		self:addToken(TokenEnums.Comment,str):newLine()
+		self:addToken(TokenEnum.Comment,str):newLine()
 		return true
 	end
 	if self:checkLimit() then
 		self:addCharToStr(str)
-		self:addToken(TokenEnums.Comment,str)
+		self:addToken(TokenEnum.Comment,str)
 		return true
 	end
 	self:addCharToStr(str)
@@ -127,7 +128,7 @@ end
 function Scanner:multiLineCommentEqualSignsEnding(str)
 	if self.runningCount == self.endingCount and self:checkCurrentCharErrorOnLimit("]") then
 		self:addCharToStr(str)
-		self:addToken(TokenEnums.Comment,str)
+		self:addToken(TokenEnum.Comment,str)
 		return true
 	elseif self.runningCount > 0 and self:checkCurrentCharErrorOnLimit("=") then
 		self:addCharToStr(str)
@@ -152,7 +153,7 @@ function Scanner:multiLineCommentEnding(str)
 	if self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("]") then
 		self:addCharToStr(str)
 		self:addCharToStr(str)
-		self:addToken(TokenEnums.Comment,str)
+		self:addToken(TokenEnum.Comment,str)
 		self:incrI()
 		return true
 	end
@@ -209,10 +210,6 @@ function Scanner:minus()
 	return self:negativeSign()
 end
 
-function Scanner:negativeSign()
-
-end
-
 function Scanner:loopThroughToken(ending,str)
 	while not ending(self,str) do end
 	return self
@@ -243,7 +240,7 @@ end
 local function stringEnding(char)
 	return function(self,str)
 		if self:checkCurrentCharErrorOnLimit(char) and not self:checkPreviousChar("\\") then
-			self:addToken(TokenEnums.String,str)
+			self:addToken(TokenEnum.String,str)
 			self:incrI()
 			return true
 		end
@@ -262,7 +259,7 @@ end
 
 function Scanner:multiLineStringEnding(str)
 	if self:checkCurrentCharErrorOnLimit("]") and not self:checkPreviousChar("%") and self:checkNextCharErrorOnLimit("]") then
-		self:addToken(TokenEnums.String,str)
+		self:addToken(TokenEnum.String,str)
 		self:incrI():incrI()
 		return true
 	end
@@ -283,11 +280,11 @@ function Scanner:bracket()
 	if self:checkNextCharErrorOnLimit('[') then
 		return self:incrI():multiLineString()
 	end
-	return self:simpleToken(TokenEnums.OpenBracket)
+	return self:simpleToken(TokenEnum.OpenBracket)
 end
 
 function Scanner:curlyBracket()
-	self:simpleToken(TokenEnums.OpenCurlyBracket)
+	self:simpleToken(TokenEnum.OpenCurlyBracket)
 end
 
 function Scanner:twoCharToken(singleCharToken,twoCharToken,char)
@@ -301,74 +298,81 @@ function Scanner:twoCharToken(singleCharToken,twoCharToken,char)
 end
 
 function Scanner:negativeSign()
-	return self:twoCharToken(TokenEnums.Minus,TokenEnums.MinusAssignment,"=")
+	return self:twoCharToken(TokenEnum.Minus, TokenEnum.MinusAssignment,"=")
 end
 
 function Scanner:plus()
-	return self:twoCharToken(TokenEnums.Plus,TokenEnums.PlusAssignment,"=")
+	return self:twoCharToken(TokenEnum.Plus, TokenEnum.PlusAssignment,"=")
 end
 
 function Scanner:slash()
-	return self:twoCharToken(TokenEnums.Slash,TokenEnums.SlashAssignment,"=")
+	return self:twoCharToken(TokenEnum.Slash, TokenEnum.SlashAssignment,"=")
 end
 
 function Scanner:star()
-	return self:twoCharToken(TokenEnums.Star,TokenEnums.StarAssignment,"=")
+	return self:twoCharToken(TokenEnum.Star, TokenEnum.StarAssignment,"=")
 end
 
 function Scanner:curlyBracket()
-    return self:simpleToken(TokenEnums.curlyBracket)
+    return self:simpleToken(TokenEnum.curlyBracket)
 end
 
 function Scanner:closingCurlyBracket()
-    return self:simpleToken(TokenEnums.closingCurlyBracket)
+    return self:simpleToken(TokenEnum.closingCurlyBracket)
 end
 
 function Scanner:parenthesis()
-    return self:simpleToken(TokenEnums.parenthesis)
+    return self:simpleToken(TokenEnum.parenthesis)
 end
 
 function Scanner:closingParenthesis()
-    return self:simpleToken(TokenEnums.closingParenthesis)
+    return self:simpleToken(TokenEnum.closingParenthesis)
 end
 
 function Scanner:closingBracket()
-    return self:simpleToken(TokenEnums.closingBracket)
+    return self:simpleToken(TokenEnum.closingBracket)
 end
 
 function Scanner:colon()
-    return self:simpleToken(TokenEnums.colon)
+    return self:simpleToken(TokenEnum.colon)
 end
 
 function Scanner:semiColon()
-    return self:simpleToken(TokenEnums.semiColon)
+    return self:simpleToken(TokenEnum.semiColon)
 end
 
 function Scanner:period()
-    return self:simpleToken(TokenEnums.period)
+    return self:simpleToken(TokenEnum.period)
 end
 
 function Scanner:comma()
-    return self:simpleToken(TokenEnums.comma)
+    return self:simpleToken(TokenEnum.comma)
 end
 
 function Scanner:bang()
-    return self:twoCharToken(TokenEnums.Bang,TokenEnums.BangEquals,"=")
+    return self:twoCharToken(TokenEnum.Bang, TokenEnum.BangEquals,"=")
 end
 
 function Scanner:lessThan()
-    return self:twoCharToken(TokenEnums.LessThan,TokenEnums.LessThanEquals,"=")
+    return self:twoCharToken(TokenEnum.LessThan, TokenEnum.LessThanEquals,"=")
 end
 
 function Scanner:greaterThan()
-    return self:twoCharToken(TokenEnums.GreaterThan,TokenEnums.GreaterThanEquals,"=")
+    return self:twoCharToken(TokenEnum.GreaterThan, TokenEnum.GreaterThanEquals,"=")
 end
 
 function Scanner:equal()
-    return self:twoCharToken(TokenEnums.Equal,TokenEnums.EqualEquals,"=")
+    return self:twoCharToken(TokenEnum.Equal, TokenEnum.EqualEquals,"=")
 end
 
-local digits = {
+local alpha <const> =  {
+    ["a"] = true,["A"] = true,["b"] = true,["B"] = true,["c"] = true,["C"] = true,["d"] = true,["D"] = true,["e"] = true,["E"] = true,["f"] = true,["F"] = true,["g"] = true,
+    ["G"] = true,["h"] = true,["H"] = true,["i"] = true,["I"] = true,["j"] = true,["J"] = true,["k"] = true,["K"] = true,["l"] = true,["L"] = true,["m"] = true,["M"] = true,
+    ["n"] = true,["N"] = true,["o"] = true,["O"] = true,["p"] = true,["P"] = true,["q"] = true,["Q"] = true,["r"] = true,["R"] = true,["s"] = true,["S"] = true,["t"] = true,
+    ["T"] = true,["u"] = true,["U"] = true,["v"] = true,["V"] = true,["w"] = true,["W"] = true,["x"] = true,["X"] = true,["y"] = true,["Y"] = true,["z"] = true,["Z"] = true
+}
+
+local digits <const> = {
 	["0"] = true,
 	["1"] = true,
 	["2"] = true,
@@ -380,6 +384,27 @@ local digits = {
 	["8"] = true,
 	["9"] = true
 }
+
+function Scanner:keywordEnding(str)
+	if self:checkCurrentCharMatchTable(alpha) or self:checkCurrentCharMatchTable(digits) or self:checkCurrentChar("_") then
+		self:addCharToStr(str)
+		return false
+	end
+	return true
+end
+
+function Scanner:checkKeyWord(keyword,keywordType)
+	self:setTokenStart()
+	local str = {self:consumeCurrentChar()}
+	self:loopThroughToken(self.keywordEnding,str)
+	if length(keyword) == #str then
+		local tokenStr <const> = concat(str)
+		if length(keyword) == length(tokenStr) then
+			return self:addToken(keywordType,str)
+		end
+	end
+	return self:addToken(TokenEnum.Identifier,str)
+end
 
 function Scanner:loopThroughDigit(str)
 	while self:checkCurrentCharMatchTable(digits) do
@@ -396,7 +421,11 @@ function Scanner:digit()
 		self:addCharToStr(str)
 	end
 	self:loopThroughDigit(str)
-	return self:addToken(TokenEnums.Digit,str)
+	return self:addToken(TokenEnum.Digit,str)
+end
+
+function Scanner:scanAnd()
+	return self:checkKeyWord("and",TokenEnum.And)
 end
 
 local charsToTokenize <const> = {
@@ -434,6 +463,7 @@ local charsToTokenize <const> = {
 	["7"] = Scanner.digit,
 	["8"] = Scanner.digit,
 	["9"] = Scanner.digit,
+	["a"] = Scanner.scanAnd
 
 }
 
