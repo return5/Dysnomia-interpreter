@@ -8,23 +8,21 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local TokenizerEnums <const> = require('tokenizer.TokenizerEnums')
-local Tokenizer <const> = require('tokenizer.Tokenizer')
-local CommentToken <const> = require('tokens.CommentToken')
 
 local setmetatable <const> = setmetatable
+local write <const> = io.write
 
-local CommentTokenizer <const> = {type = TokenizerEnums.CommentTokenizer}
-setmetatable(CommentTokenizer,Tokenizer)
-CommentTokenizer.__index = CommentTokenizer
+local Token <const> = {type = "Token"}
+Token.__index = Token
 
-_ENV = CommentTokenizer
+_ENV = Token
 
-
-function CommentTokenizer:addCommentToken(str)
-	self:addCurrentCharToStr(str)
-	self:addToken(CommentToken,str)
-	return self
+function Token:print()
+	write(self.type," :: ",self.str," :: ",self.startLine,":",self.startCol," :: ",self.endLine,":",self.endCol,"\n")
 end
 
-return CommentTokenizer
+function Token:new(type,str,tokenCoords)
+	return setmetatable({type = type,str = str,startCol = tokenCoords.startCol,endCol = tokenCoords.endCol,startLine = tokenCoords.startLine,endLine = tokenCoords.endLine},self)
+end
+
+return Token

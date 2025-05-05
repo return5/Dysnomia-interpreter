@@ -11,7 +11,7 @@
 
 ]]
 
-local FileTokenizer <const> = require('tokenizer.FileTokenizer')
+local Scanner <const> = require('scanner.Scanner')
 
 local function strToCharArray(str)
 	local charArray <const> = {}
@@ -22,8 +22,9 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = '1 - 2 = 3 and so does 1 -= 2 equals three adding 1 + 2 and assignment 2 += 3 and then 3 -= 4 trying out slash 1 / 2 and 3 /3  now star 5 *6 and 5 *= 6'
-	local tokens <const> = FileTokenizer.tokenize(strToCharArray(str))
+	local str <const> = '--this is a comment\n --this is a second comment'
+	local scanner <const> = Scanner:new(strToCharArray(str))
+	local tokens <const> = scanner:scanFile()
 	for i=1,#tokens,1 do
 		io.write(i,":: ")
 		tokens[i]:print()

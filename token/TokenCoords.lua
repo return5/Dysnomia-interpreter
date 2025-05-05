@@ -8,19 +8,26 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local TokenEnums <const> = require('tokens.TokenEnums')
-
-local Token <const> = require('tokens.Token')
 local setmetatable <const> = setmetatable
+local TokenCoords <const> = {type = "TokenCoords"}
+TokenCoords.__index = TokenCoords
 
-local CommentToken <const> = {type = TokenEnums.Comment}
-CommentToken.__index = CommentToken
-setmetatable(CommentToken,Token)
+_ENV = TokenCoords
 
-_ENV = CommentToken
-
-function CommentToken:new(tokenizer,str)
-	return setmetatable(Token:new(tokenizer,str),self)
+function TokenCoords:setEndingValues(endingLine,endCol)
+	self.endLine = endingLine
+	self.endCol = endCol
+	return self
 end
 
-return CommentToken
+function TokenCoords:setStartValues(startLine,startCol)
+	self.startCol = startCol
+	self.startLine = startLine
+	return self
+end
+
+function TokenCoords:new()
+	return setmetatable({startCol = 1, startLine = 1,endLine = 1, endCol = 1},self)
+end
+
+return TokenCoords
