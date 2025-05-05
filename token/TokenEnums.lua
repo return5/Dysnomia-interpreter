@@ -19,5 +19,15 @@ return {
 	Slash = "Slash",
 	SlashAssignment = "SlashAssignment",
 	Star = "Star",
-	StarAssignment = "StarAssignment"
+	StarAssignment = "StarAssignment",
+	OpenBracket = "OpenBracket",
+	OpenCurlyBracket = "OpenCurlyBracket",
+	OpenParenthesis = "OpenParenthesis",
+	ClosingParenthesis = "ClosingParenthesis",
+	ClosingBracket = "ClosingBracket",
+	ClosingCurlyBracket = "ClosingCurlyBracket",
+	Comma = "Comma",
+	Colon = "Colon",
+	SemiColon = "SemiColon",
+	Period = "Period"
 }

@@ -23,7 +23,7 @@ Scanner.__index = Scanner
 _ENV = Scanner
 
 function Scanner:addToken(type,str)
-	self.tokenCoord:setEndingValues(self.line,self.currentCol)
+	self.tokenCoord:setEndingValues(self.line,self.currentCol - 1)
 	self.tokens[#self.tokens + 1] = Token:new(type,concat(str),self.tokenCoord)
 	return self
 end
@@ -266,12 +266,21 @@ function Scanner:multiLineString()
 	return self:scanString(Scanner.multiLineStringEnding)
 end
 
+function Scanner:simpleToken(type)
+	self:setTokenStart()
+	return self:addToken(type,{self:consumeCurrentChar()})
+end
+
 function Scanner:bracket()
 	if self:checkNextCharErrorOnLimit('[') then
 		return self:incrI():multiLineString()
 	end
+	return self:simpleToken(TokenEnums.OpenBracket)
 end
 
+function Scanner:curlyBracket()
+	self:simpleToken(TokenEnums.OpenCurlyBracket)
+end
 
 function Scanner:math(mathToken,updateToken)
 	self:setTokenStart()
@@ -299,6 +308,43 @@ function Scanner:star()
 	return self:math(TokenEnums.Star,TokenEnums.StarAssignment)
 end
 
+function Scanner:curlyBracket()
+    return self:simpleToken(TokenEnums.curlyBracket)
+end
+
+function Scanner:closingCurlyBracket()
+    return self:simpleToken(TokenEnums.closingCurlyBracket)
+end
+
+function Scanner:parenthesis()
+    return self:simpleToken(TokenEnums.parenthesis)
+end
+
+function Scanner:closingParenthesis()
+    return self:simpleToken(TokenEnums.closingParenthesis)
+end
+
+function Scanner:closingBracket()
+    return self:simpleToken(TokenEnums.closingBracket)
+end
+
+function Scanner:colon()
+    return self:simpleToken(TokenEnums.colon)
+end
+
+function Scanner:semiColon()
+    return self:simpleToken(TokenEnums.semiColon)
+end
+
+function Scanner:period()
+    return self:simpleToken(TokenEnums.period)
+end
+
+function Scanner:comma()
+    return self:simpleToken(TokenEnums.comma)
+end
+
+
 local charsToTokenize <const> = {
 	['-'] = Scanner.minus,
 	["'"] = Scanner.singleQuote,
@@ -310,18 +356,28 @@ local charsToTokenize <const> = {
 	['\r'] = Scanner.consumeCurrentChar,
 	['+'] = Scanner.plus,
 	['/'] = Scanner.slash,
-	['*'] = Scanner.star
+	['*'] = Scanner.star,
+	["{"] = Scanner.curlyBracket,
+	["}"] = Scanner.closingCurlyBracket,
+	["("] = Scanner.parenthesis,
+	[")"] = Scanner.closingParenthesis,
+	["]"] = Scanner.closingBracket,
+	[":"] = Scanner.colon,
+	[";"] = Scanner.semiColon,
+	["."] = Scanner.period,
+	[","] = Scanner.comma,
+
 }
 
 function Scanner:scanFile()
-	while not self:checkLimit() do
+	repeat
 		local currentChar <const> = self:getCurrentChar()
 		if charsToTokenize[currentChar] then
 			charsToTokenize[currentChar](self)
 		else
 			self:consumeCurrentChar()
 		end
-	end
+	until self:checkLimit()
 	return self.tokens
 end
 
