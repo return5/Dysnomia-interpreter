@@ -58,6 +58,10 @@ function Scanner:checkCurrentChar(char)
 	return self:checkChar(self.i,char)
 end
 
+function Scanner:checkPreviousChar(char)
+	return self:checkChar(self.i - 1,char)
+end
+
 function Scanner:addCharToStr(str)
 	str[#str + 1] = self:consumeCurrentChar()
 	return self
@@ -191,11 +195,15 @@ function Scanner:scanComment()
 	return self:loopThroughToken(commentEnding,str)
 end
 
-function Scanner:checkForComment()
+function Scanner:minus()
 	if self:checkNextCharErrorOnLimit("-") then
 		return self:scanComment()
 	end
-	return self:minus()
+	return self:negativeSign()
+end
+
+function Scanner:negativeSign()
+
 end
 
 function Scanner:loopThroughToken(ending,str)
@@ -218,15 +226,41 @@ function Scanner:incrI()
 	return self:incrCol()
 end
 
+function Scanner:scanString(strEnding)
+	self:setTokenStart()
+	local str <const> = {self:consumeCurrentChar()}
+	return self:loopThroughToken(strEnding,str)
+end
+
+local function stringEnding(char)
+	return function(self,str)
+		if self:checkCurrentCharErrorOnLimit(char) and not self:checkPreviousChar("\\") then
+			self:addCharToStr(str)
+			self:addToken(TokenEnums.String,str)
+			return true
+		end
+		self:addCharToStr(str)
+		return false
+	end
+end
+
+function Scanner:singleQuote()
+	return self:scanString(stringEnding("'"))
+end
+
+function Scanner:doubleQuote()
+	return self:scanString(stringEnding('"'))
+end
+
 local charsToTokenize <const> = {
-	['-'] = Scanner.checkForComment,
+	['-'] = Scanner.minus,
 	["'"] = Scanner.singleQuote,
 	['"'] = Scanner.doubleQuote,
 	["\n"] = Scanner.newLine,
-	["["] = Scanner.checkMultiLineString,
-	[' '] = Scanner.consumeSpace,
-	['\t'] = Scanner.consumeSpace,
-	['\r'] = Scanner.consumeSpace,
+	["["] = Scanner.squareBracket,
+	[' '] = Scanner.consumeCurrentChar,
+	['\t'] = Scanner.consumeCurrentChar,
+	['\r'] = Scanner.consumeCurrentChar,
 	['+'] = Scanner.plus,
 	['/'] = Scanner.slash,
 	['*'] = Scanner.star
