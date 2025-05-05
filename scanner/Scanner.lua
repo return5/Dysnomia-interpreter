@@ -88,7 +88,6 @@ function Scanner:incrLine()
 end
 
 function Scanner:newLine()
-	write("newLine\n")
 	self:consumeCurrentChar()
 	return self:incrLine()
 end
@@ -271,6 +270,33 @@ function Scanner:bracket()
 	if self:checkNextCharErrorOnLimit('[') then
 		return self:incrI():multiLineString()
 	end
+end
+
+
+function Scanner:math(mathToken,updateToken)
+	self:setTokenStart()
+	local str <const> = {self:consumeCurrentChar()}
+	if self:checkCurrentCharErrorOnLimit("=") then
+		self:addCharToStr(str)
+		return self:addToken(updateToken,str)
+	end
+	return self:addToken(mathToken,str)
+end
+
+function Scanner:negativeSign()
+	return self:math(TokenEnums.Minus,TokenEnums.MinusAssignment)
+end
+
+function Scanner:plus()
+	return self:math(TokenEnums.Plus,TokenEnums.PlusAssignment)
+end
+
+function Scanner:slash()
+	return self:math(TokenEnums.Slash,TokenEnums.SlashAssignment)
+end
+
+function Scanner:star()
+	return self:math(TokenEnums.Star,TokenEnums.StarAssignment)
 end
 
 local charsToTokenize <const> = {

@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = "[['this is a double string\" and this is part of same double string']]"
+	local str <const> = "a +=-- 5"
 	local scanner <const> = Scanner:new(strToCharArray(str))
 	local tokens <const> = scanner:scanFile()
 	for i=1,#tokens,1 do
