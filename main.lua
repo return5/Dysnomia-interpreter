@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = "+ = - / * += -= *= /= > < >= <= =="
+	local str <const> = "1 2 3 4 567 890 1.23 456a--this is a number"
 	local scanner <const> = Scanner:new(strToCharArray(str))
 	local tokens <const> = scanner:scanFile()
 	for i=1,#tokens,1 do

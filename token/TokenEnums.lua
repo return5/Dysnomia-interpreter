@@ -38,4 +38,5 @@ return {
 	GreaterThanEquals = "GreaterThanEquals",
 	Equal = "Equal",
 	EqualEquals = "EqualEquals",
+	Digit = "Digit"
 }

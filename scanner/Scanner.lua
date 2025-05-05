@@ -46,6 +46,14 @@ function Scanner:consumeCurrentChar()
 	return char
 end
 
+function Scanner:checkCurrentCharMatchTable(tbl)
+	return tbl[self:getCurrentChar()]
+end
+
+function Scanner:checkNextCharMatchTable(tbl)
+	return tbl[self:getNextChar()]
+end
+
 function Scanner:checkChar(i,char)
 	return self.charArray[i] == char
 end
@@ -360,6 +368,37 @@ function Scanner:equal()
     return self:twoCharToken(TokenEnums.Equal,TokenEnums.EqualEquals,"=")
 end
 
+local digits = {
+	["0"] = true,
+	["1"] = true,
+	["2"] = true,
+	["3"] = true,
+	["4"] = true,
+	["5"] = true,
+	["6"] = true,
+	["7"] = true,
+	["8"] = true,
+	["9"] = true
+}
+
+function Scanner:loopThroughDigit(str)
+	while self:checkCurrentCharMatchTable(digits) do
+		self:addCharToStr(str)
+	end
+	return self
+end
+
+function Scanner:digit()
+	self:setTokenStart()
+	local str <const> = {self:consumeCurrentChar()}
+	self:loopThroughDigit(str)
+	if(self:checkCurrentChar(".") and self:checkNextCharMatchTable(digits)) then
+		self:addCharToStr(str)
+	end
+	self:loopThroughDigit(str)
+	return self:addToken(TokenEnums.Digit,str)
+end
+
 local charsToTokenize <const> = {
 	['-'] = Scanner.minus,
 	["'"] = Scanner.singleQuote,
@@ -385,6 +424,17 @@ local charsToTokenize <const> = {
 	["<"] = Scanner.lessThan,
 	[">"] = Scanner.greaterThan,
 	["="] = Scanner.equal,
+	["0"] = Scanner.digit,
+	["1"] = Scanner.digit,
+	["2"] = Scanner.digit,
+	["3"] = Scanner.digit,
+	["4"] = Scanner.digit,
+	["5"] = Scanner.digit,
+	["6"] = Scanner.digit,
+	["7"] = Scanner.digit,
+	["8"] = Scanner.digit,
+	["9"] = Scanner.digit,
+
 }
 
 function Scanner:scanFile()
