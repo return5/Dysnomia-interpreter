@@ -84,6 +84,7 @@ function Scanner:incrLine()
 end
 
 function Scanner:newLine()
+	write("newLine\n")
 	self:consumeCurrentChar()
 	return self:incrLine()
 end
@@ -114,7 +115,6 @@ end
 
 function Scanner:multiLineCommentEqualSignsEnding(str)
 	if self.runningCount == self.endingCount and self:checkCurrentCharErrorOnLimit("]") then
-		self:addCharToStr(str)
 		self:addCharToStr(str)
 		self:addToken(TokenEnums.Comment,str)
 		return true
@@ -222,7 +222,7 @@ local charsToTokenize <const> = {
 	['-'] = Scanner.checkForComment,
 	["'"] = Scanner.singleQuote,
 	['"'] = Scanner.doubleQuote,
-	["\n"] = Scanner.consumeNewLine,
+	["\n"] = Scanner.newLine,
 	["["] = Scanner.checkMultiLineString,
 	[' '] = Scanner.consumeSpace,
 	['\t'] = Scanner.consumeSpace,

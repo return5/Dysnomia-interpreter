@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = '--[==[this is a comment\n --this is a second comment]=] --this is a third comment]==]'
+	local str <const> = '--[==[this is a comment\n --this is a second comment]==]\n --this is a third comment]==]'
 	local scanner <const> = Scanner:new(strToCharArray(str))
 	local tokens <const> = scanner:scanFile()
 	for i=1,#tokens,1 do
