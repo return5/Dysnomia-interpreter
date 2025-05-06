@@ -319,7 +319,6 @@ function Scanner:simpleToken(type)
 end
 
 function Scanner:bracket()
-	write("bracket\n")
 	if self:checkNextChar('[') then
 		return self:incrI():multiLineString()
 	end
@@ -373,7 +372,7 @@ function Scanner:closingBracket()
 end
 
 function Scanner:colon()
-    return self:simpleToken(TokenEnum.Colon)
+	return self:twoCharToken(TokenEnum.Colon,TokenEnum.Inherent,">")
 end
 
 function Scanner:semiColon()
@@ -452,7 +451,7 @@ end
 function Scanner:checkMultipleKeyWords(keyWords)
 	self:scanThroughKeyWord()
 	for keyword,tokenType in pairs(keyWords) do
-		if self:checkKeyword(keyword,str) then return self:addToken(tokenType) end
+		if self:checkKeyword(keyword) then return self:addToken(tokenType) end
 	end
 	return self:addToken(TokenEnum.Identifier)
 end
@@ -491,10 +490,6 @@ function Scanner:scanNil()
     return self:checkKeyWord("nil",TokenEnum.Nil)
 end
 
-function Scanner:scanSelf()
-    return self:checkKeyWord("self",TokenEnum.Self)
-end
-
 function Scanner:scanUntil()
 	return self:checkKeyWord("until",TokenEnum.Until)
 end
@@ -520,15 +515,19 @@ function Scanner:scanT()
 end
 
 function Scanner:scanC()
-	return self:checkMultipleKeyWords({['class'] = TokenEnum.Class,['const'] = TokenEnum.Const})
+	return self:checkMultipleKeyWords({['class'] = TokenEnum.Class,['const'] = TokenEnum.Const,['constructor'] = TokenEnum.Constructor})
+end
+
+function Scanner:scanS()
+	return self:checkMultipleKeyWords({["self"] = TokenEnum.Self,['super'] = TokenEnum.Super,['static'] = TokenEnum.Static})
 end
 
 function Scanner:scanI()
 	return self:checkMultipleKeyWords(({['if'] = Token.If,['immutable'] = TokenEnum.Immutable}))
 end
 
-function Scanner:mutable()
-	return self:checkKeyWord("mutable",TokenEnum.Mutable)
+function Scanner:scanM()
+	return self:checkMultipleKeyWords({["mutable"] = TokenEnum.Mutable,['metamethod'] = TokenEnum.Metamethod,['method'] = TokenEnum.method})
 end
 
 function Scanner:global()
@@ -607,12 +606,12 @@ local charsToTokenize <const> = {
 	["t"] = Scanner.scanT,
 	["n"] = Scanner.scanNil,
 	['u'] = Scanner.scanUntil,
-	["s"] = Scanner.scanSelf,
+	["s"] = Scanner.scanS,
 	["f"] = Scanner.scanF,
 	["r"] = Scanner.scanR,
 	["e"] = Scanner.scanE,
 	["g"] = Scanner.global,
-	["m"] = Scanner.mutable,
+	["m"] = Scanner.scanM,
 	['d'] = Scanner.scanDo,
 	["#"] = Scanner.scanPoundSign
 }

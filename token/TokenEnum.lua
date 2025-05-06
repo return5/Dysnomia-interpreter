@@ -67,5 +67,11 @@ return {
 	Error = "Error",
 	Arrow = "Arrow",
 	Do = "Do",
-	PoundSign = "PoundSign"
+	PoundSign = "PoundSign",
+	Metamethod = "Metamethod",
+	Method = "Method",
+	Super = "Super",
+	Inherent = "Inherent",
+	Constructor = "Constructor",
+	Static = "Static",
 }
