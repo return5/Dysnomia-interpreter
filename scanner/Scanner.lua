@@ -15,6 +15,7 @@ local TokenCoords <const> = require('token.TokenCoords')
 local concat <const> = table.concat
 local error <const> = error
 local length <const> = string.len
+local pairs <const> = pairs
 local write = io.write
 
 local setmetatable <const> = setmetatable
@@ -393,15 +394,30 @@ function Scanner:keywordEnding(str)
 	return true
 end
 
-function Scanner:checkKeyWord(keyword,keywordType)
+function Scanner:scanThroughKeyWord()
 	self:setTokenStart()
 	local str = {self:consumeCurrentChar()}
 	self:loopThroughToken(self.keywordEnding,str)
+	return str
+end
+
+local function checkKeyword(keyword,str)
 	if length(keyword) == #str then
 		local tokenStr <const> = concat(str)
-		if length(keyword) == length(tokenStr) then
-			return self:addToken(keywordType,str)
-		end
+		if keyword == tokenStr then return true end
+	end
+	return false
+end
+
+function Scanner:checkKeyWord(keyword,keywordType)
+	local str <const> = self:scanThroughKeyWord()
+	return checkKeyword(keyword,str) and self:addToken(keywordType,str) or self:addToken(TokenEnum.Identifier,str)
+end
+
+function Scanner:checkMultipleKeyWords(keyWords)
+	local str <const> = self:scanThroughKeyWord()
+	for keyword,tokenType in pairs(keyWords) do
+		if checkKeyword(keyword,str) then return self:addToken(tokenType,str) end
 	end
 	return self:addToken(TokenEnum.Identifier,str)
 end
@@ -426,6 +442,50 @@ end
 
 function Scanner:scanAnd()
 	return self:checkKeyWord("and",TokenEnum.And)
+end
+
+function Scanner:scanIf()
+    return self:checkKeyWord("if",TokenEnum.If)
+end
+
+function Scanner:class()
+    return self:checkKeyWord("class",TokenEnum.Class)
+end
+
+function Scanner:scanWhile()
+    return self:checkKeyWord("while",TokenEnum.While)
+end
+
+function Scanner:scanNil()
+    return self:checkKeyWord("nil",TokenEnum.Nil)
+end
+
+function Scanner:scanSelf()
+    return self:checkKeyWord("self",TokenEnum.Self)
+end
+
+function Scanner:scanUntil()
+	return self:checkKeyWord("until",TokenEnum.Until)
+end
+
+function Scanner:scanLocal()
+	return self:checkKeyWord("local",TokenEnum.Local)
+end
+
+function Scanner:scanF()
+	return self:checkMultipleKeyWords({["for"] = TokenEnum.For,["false"] = TokenEnum.False,["function"] = TokenEnum.Function})
+end
+
+function Scanner:scanE()
+	return self:checkMultipleKeyWords({["else"] = TokenEnum.Else,["elseif"] = TokenEnum.ElseIf,['end'] = TokenEnum.End})
+end
+
+function Scanner:scanR()
+	return self:checkMultipleKeyWords({["return"] = TokenEnum.Return,["record"] = TokenEnum.Record,["repeat"] = TokenEnum.Repeat})
+end
+
+function Scanner:scanT()
+	return self:checkMultipleKeyWords({["true"] = TokenEnum.True,["then"] = TokenEnum.Then})
 end
 
 local charsToTokenize <const> = {
@@ -463,7 +523,19 @@ local charsToTokenize <const> = {
 	["7"] = Scanner.digit,
 	["8"] = Scanner.digit,
 	["9"] = Scanner.digit,
-	["a"] = Scanner.scanAnd
+	["a"] = Scanner.scanAnd,
+	["l"] = Scanner.scanLocal,
+	["o"] = Scanner.scanOr,
+	["i"] = Scanner.scanIf,
+	["c"] = Scanner.class,
+	["w"] = Scanner.scanWhile,
+	["t"] = Scanner.scanT,
+	["n"] = Scanner.scanNil,
+	['u'] = Scanner.scanUntil,
+	["s"] = Scanner.scanSelf,
+	["f"] = Scanner.scanF,
+	["r"] = Scanner.scanR,
+	["e"] = Scanner.scanE
 
 }
 

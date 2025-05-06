@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = "and 1 + 2 and 3"
+	local str <const> = "return repeat record until while for if else elseif nil function and or self end then"
 	local scanner <const> = Scanner:new(strToCharArray(str))
 	local tokens <const> = scanner:scanFile()
 	for i=1,#tokens,1 do
