@@ -64,5 +64,5 @@ return {
 	Mutable = "Mutable",
 	Immutable = "Immutable",
 	Global = "Global",
-
+	Error = "Error"
 }

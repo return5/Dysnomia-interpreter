@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = "return repeat record until while for if else elseif nil function and or self end then global const mutable immutable"
+	local str <const> = '"this is a un matched string"'
 	local tokens <const> = Scanner.scan(strToCharArray(str))
 	for i=1,#tokens,1 do
 		io.write(i,":: ")

@@ -81,10 +81,12 @@ function Scanner:checkLimit()
 	return self.i > self.limit
 end
 
-function Scanner:errorOnLimit(i)
+function Scanner:errorOnLimit(i,message)
 	if i > self.limit then
-		error("error when searching for end of token\n")
+		self:addToken(TokenEnum.Error,{message})
+		return true
 	end
+	return false
 end
 
 function Scanner:restCol()
@@ -102,16 +104,6 @@ function Scanner:newLine()
 	return self:incrLine()
 end
 
-function Scanner:checkNextCharErrorOnLimit(char)
-	self:errorOnLimit(self.i + 1)
-	return self:checkNextChar(char)
-end
-
-function Scanner:checkCurrentCharErrorOnLimit(char)
-	self:errorOnLimit(self.i)
-	return self:checkCurrentChar(char)
-end
-
 function Scanner:singleLineCommentEnding(str)
 	if self:checkCurrentChar("\n") then
 		self:addToken(TokenEnum.Comment,str):newLine()
@@ -127,19 +119,22 @@ function Scanner:singleLineCommentEnding(str)
 end
 
 function Scanner:multiLineCommentEqualSignsEnding(str)
-	if self.runningCount == self.endingCount and self:checkCurrentCharErrorOnLimit("]") then
+	if self.runningCount == self.endingCount and self:checkCurrentChar("]") then
 		self:addCharToStr(str)
 		self:addToken(TokenEnum.Comment,str)
 		return true
-	elseif self.runningCount > 0 and self:checkCurrentCharErrorOnLimit("=") then
+	elseif self.runningCount > 0 and self:checkCurrentChar("=") then
 		self:addCharToStr(str)
 		self.runningCount = self.runningCount + 1
-	elseif self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("=") then
+	elseif self:errorOnLimit(self.i,"reached end of file looking for ending of comment.") then
+		self:incrI()
+		return true
+	elseif self:checkCurrentChar("]") and self:checkNextChar("=") then
 		self:addCharToStr(str)
 		self:addCharToStr(str)
 		self.runningCount = self.runningCount + 1
 	else
-		if self:checkCurrentCharErrorOnLimit("\n") then
+		if self:checkCurrentChar("\n") then
 			self:addCharToStr(str)
 			self:newLine()
 		else
@@ -151,13 +146,14 @@ function Scanner:multiLineCommentEqualSignsEnding(str)
 end
 
 function Scanner:multiLineCommentEnding(str)
-	if self:checkCurrentChar("]") and self:checkNextCharErrorOnLimit("]") then
+	if self:checkCurrentChar("]") and self:checkNextChar("]") then
 		self:addCharToStr(str)
 		self:addCharToStr(str)
 		self:addToken(TokenEnum.Comment,str)
 		self:incrI()
 		return true
 	end
+	if self:errorOnLimit(self.i,"reached end of file looking for ']'") then self:incrI() return true end
 	if self:checkCurrentChar("\n") then
 		self:addCharToStr(str)
 		self:newLine()
@@ -205,7 +201,7 @@ function Scanner:scanComment()
 end
 
 function Scanner:minus()
-	if self:checkNextCharErrorOnLimit("-") then
+	if self:checkNextChar("-") then
 		return self:scanComment()
 	end
 	return self:negativeSign()
@@ -238,32 +234,34 @@ function Scanner:scanString(strEnding)
 	return self:loopThroughToken(strEnding,str)
 end
 
-local function stringEnding(char)
+local function stringEnding(char,ending)
 	return function(self,str)
-		if self:checkCurrentCharErrorOnLimit(char) and not self:checkPreviousChar("\\") then
+		if self:checkCurrentChar(char) and not self:checkPreviousChar("\\") then
 			self:addToken(TokenEnum.String,str)
 			self:incrI()
 			return true
 		end
+		if self:errorOnLimit(self.i,"reached end of file looking for closing " .. ending) then self:incrI() return true end
 		self:addCharToStr(str)
 		return false
 	end
 end
 
 function Scanner:singleQuote()
-	return self:scanString(stringEnding("'"))
+	return self:scanString(stringEnding("'",[["'"]]))
 end
 
 function Scanner:doubleQuote()
-	return self:scanString(stringEnding('"'))
+	return self:scanString(stringEnding('"',[['"']]))
 end
 
 function Scanner:multiLineStringEnding(str)
-	if self:checkCurrentCharErrorOnLimit("]") and not self:checkPreviousChar("%") and self:checkNextCharErrorOnLimit("]") then
+	if self:checkCurrentChar("]") and not self:checkPreviousChar("%") and self:checkNextChar("]") then
 		self:addToken(TokenEnum.String,str)
 		self:incrI():incrI()
 		return true
 	end
+	if self:errorOnLimit(self.i,"reached end of file while searching for closing ']'") then self:incrI() return true end
 	self:addCharToStr(str)
 	return false
 end
@@ -278,7 +276,7 @@ function Scanner:simpleToken(type)
 end
 
 function Scanner:bracket()
-	if self:checkNextCharErrorOnLimit('[') then
+	if self:checkNextChar('[') then
 		return self:incrI():multiLineString()
 	end
 	return self:simpleToken(TokenEnum.OpenBracket)
@@ -291,7 +289,7 @@ end
 function Scanner:twoCharToken(singleCharToken,twoCharToken,char)
 	self:setTokenStart()
 	local str <const> = {self:consumeCurrentChar()}
-	if self:checkCurrentCharErrorOnLimit(char) then
+	if self:checkCurrentChar(char) then
 		self:addCharToStr(str)
 		return self:addToken(twoCharToken,str)
 	end
