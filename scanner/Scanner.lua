@@ -204,14 +204,17 @@ function Scanner:arrow()
 	return self:addToken(TokenEnum.Arrow,str)
 end
 
+function Scanner:checkForMultipleTokens(tokens,default)
+	for char,func in pairs(tokens) do
+		if self:checkNextChar(char) then
+			return func(self)
+		end
+	end
+	return default(self)
+end
+
 function Scanner:hyphen()
-	if self:checkNextChar("-") then
-		return self:scanComment()
-	end
-	if self:checkNextChar(">") then
-		return self:arrow()
-	end
-	return self:minus()
+	return self:checkForMultipleTokens({['-'] = Scanner.scanComment,['>'] = Scanner.arrow},Scanner.minus)
 end
 
 function Scanner:loopThroughToken(ending,str)
