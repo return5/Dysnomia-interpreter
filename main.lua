@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = 'world abc hello --this is a string\n (a,b) -> return a + b'
+	local str <const> = '--this is a string\n --[=[this is another comment\n after new line]==] ]=] (a,b) ->{ return a + b } if elseif else then end while do for repeat until class self global constant immutable mutable -xyz #table fge& . ; : [ ]  _abc cde 123 456.789'
 	local tokens <const> = Scanner.scan(strToCharArray(str))
 	for i=1,#tokens,1 do
 		io.write(i,":: ")

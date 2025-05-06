@@ -15,6 +15,7 @@ local TokenCoords <const> = require('token.TokenCoords')
 local concat <const> = table.concat
 local length <const> = string.len
 local pairs <const> = pairs
+local write <const> = io.write
 
 local setmetatable <const> = setmetatable
 
@@ -22,10 +23,40 @@ local Scanner <const> = {type = "Scanner"}
 Scanner.__index = Scanner
 _ENV = Scanner
 
-function Scanner:addToken(type,str)
-	self.tokenCoord:setEndingValues(self.line,self.currentCol - 1)
-	self.tokens[#self.tokens + 1] = Token:new(type,concat(str),self.tokenCoord)
+function Scanner:initStr(char)
+	self.str[1] = char
+	self.strI = 2
 	return self
+end
+
+function Scanner:incrStrI()
+	self.strI = self.strI + 1
+	return self
+end
+
+function Scanner:truncateStr()
+	for i=#self.str,self.strI,-1 do
+		self.str[i] = nil
+	end
+	return self
+end
+
+function Scanner:addToStr(char)
+	self.str[self.strI] = char
+	return self:incrStrI()
+end
+
+function Scanner:addToken(type)
+	self:truncateStr()
+	self.tokenCoord:setEndingValues(self.line,self.currentCol - 1)
+	self.tokens[#self.tokens + 1] = Token:new(type,concat(self.str),self.tokenCoord)
+	return self
+end
+
+function Scanner:errorToken(message)
+	self:initStr(message)
+	self:truncateStr()
+	return self:addToken(TokenEnum.Error)
 end
 
 function Scanner:getChar(i)
@@ -70,9 +101,8 @@ function Scanner:checkPreviousChar(char)
 	return self:checkChar(self.i - 1,char)
 end
 
-function Scanner:addCharToStr(str)
-	str[#str + 1] = self:consumeCurrentChar()
-	return self
+function Scanner:consumeCharToStr()
+	return self:addToStr(self:consumeCurrentChar())
 end
 
 function Scanner:checkLimit()
@@ -81,7 +111,7 @@ end
 
 function Scanner:errorOnLimit(i,message)
 	if i > self.limit then
-		self:addToken(TokenEnum.Error,{message})
+		self:errorToken(message)
 		return true
 	end
 	return false
@@ -104,69 +134,69 @@ end
 
 function Scanner:singleLineCommentEnding(str)
 	if self:checkCurrentChar("\n") then
-		self:addToken(TokenEnum.Comment,str):newLine()
+		self:addToken(TokenEnum.Comment):newLine()
 		return true
 	end
 	if self:checkLimit() then
-		self:addCharToStr(str)
-		self:addToken(TokenEnum.Comment,str)
+		self:consumeCharToStr()
+		self:addToken(TokenEnum.Comment)
 		return true
 	end
-	self:addCharToStr(str)
+	self:consumeCharToStr()
 	return false
 end
 
-function Scanner:multiLineCommentEqualSignsEnding(str)
+function Scanner:multiLineCommentEqualSignsEnding()
 	if self.runningCount == self.endingCount and self:checkCurrentChar("]") then
-		self:addCharToStr(str)
-		self:addToken(TokenEnum.Comment,str)
+		self:consumeCharToStr()
+		self:addToken(TokenEnum.Comment)
 		return true
 	elseif self.runningCount > 0 and self:checkCurrentChar("=") then
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 		self.runningCount = self.runningCount + 1
 	elseif self:errorOnLimit(self.i,"reached end of file looking for ending of comment.") then
 		self:incrI()
 		return true
 	elseif self:checkCurrentChar("]") and self:checkNextChar("=") then
-		self:addCharToStr(str)
-		self:addCharToStr(str)
+		self:consumeCharToStr()
+		self:consumeCharToStr()
 		self.runningCount = self.runningCount + 1
 	else
 		if self:checkCurrentChar("\n") then
-			self:addCharToStr(str)
+			self:consumeCharToStr()
 			self:newLine()
 		else
-			self:addCharToStr(str)
+			self:consumeCharToStr()
 		end
 		self.runningCount = 0
 	end
 	return false
 end
 
-function Scanner:multiLineCommentEnding(str)
+function Scanner:multiLineCommentEnding()
 	if self:checkCurrentChar("]") and self:checkNextChar("]") then
-		self:addCharToStr(str)
-		self:addCharToStr(str)
-		self:addToken(TokenEnum.Comment,str)
+		self:consumeCharToStr()
+		self:consumeCharToStr()
+		self:addToken(TokenEnum.Comment)
 		self:incrI()
 		return true
 	end
 	if self:errorOnLimit(self.i,"reached end of file looking for ']'") then self:incrI() return true end
 	if self:checkCurrentChar("\n") then
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 		self:newLine()
 	else
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 	end
 	return false
 end
 
 function Scanner:countMultiLineCommentEqualSigns(str)
-	self:addCharToStr(str)
+	self:consumeCharToStr()
 	self.endingCount = 1
 	self.runningCount = 0
 	while self:checkCurrentChar("=") do
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 		self.endingCount = self.endingCount + 1
 	end
 	if self:checkCurrentChar("[") then return self.multiLineCommentEqualSignsEnding end
@@ -174,34 +204,36 @@ function Scanner:countMultiLineCommentEqualSigns(str)
 end
 
 --checking for multi line comments such as --[[ and --[=[
-function Scanner:getMultiLineCommentEnding(str)
-	self:addCharToStr(str)
+function Scanner:getMultiLineCommentEnding()
+	self:consumeCharToStr()
 	if self:checkCurrentChar("[") then
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 		return self.multiLineCommentEnding
 	end
 	if self:checkCurrentChar("=") then return self:countMultiLineCommentEqualSigns(str) end
 	return self.singleLineCommentEnding
 end
 
-function Scanner:getCommentEndingFunc(str)
+function Scanner:getCommentEndingFunc()
 	if not self:checkCurrentChar("[") then
 		return Scanner.singleLineCommentEnding
 	end
-	return self:getMultiLineCommentEnding(str)
+	return self:getMultiLineCommentEnding()
 end
 
 function Scanner:scanComment()
 	self:setTokenStart()
-	local str <const> = {self:consumeCurrentChar(),self:consumeCurrentChar()}
-	local commentEnding <const> = self:getCommentEndingFunc(str)
-	return self:loopThroughToken(commentEnding,str)
+	self:initStr(self:consumeCurrentChar())
+	self:addToStr(self:consumeCurrentChar())
+	local commentEnding <const> = self:getCommentEndingFunc()
+	return self:loopThroughToken(commentEnding,self.str)
 end
 
 function Scanner:arrow()
 	self:setTokenStart()
-	local str <const> = {self:consumeCurrentChar(),self:consumeCurrentChar()}
-	return self:addToken(TokenEnum.Arrow,str)
+	self:initStr(self:consumeCurrentChar())
+	self:consumeCharToStr()
+	return self:addToken(TokenEnum.Arrow,self.str)
 end
 
 function Scanner:checkForMultipleTokens(tokens,default)
@@ -240,14 +272,14 @@ end
 function Scanner:scanString(strEnding)
 	self:incrI()
 	self:setTokenStart()
-	local str <const> = {}
+	self:initStr("")
 	return self:loopThroughToken(strEnding,str)
 end
 
 local function stringEnding(char,ending)
 	return function(self,str)
 		if self:checkCurrentChar(char) and not self:checkPreviousChar("\\") then
-			self:addToken(TokenEnum.String,str)
+			self:addToken(TokenEnum.String)
 			self:incrI()
 			return true
 		end
@@ -267,7 +299,7 @@ end
 
 function Scanner:multiLineStringEnding(str)
 	if self:checkCurrentChar("]") and not self:checkPreviousChar("%") and self:checkNextChar("]") then
-		self:addToken(TokenEnum.String,str)
+		self:addToken(TokenEnum.String)
 		self:incrI():incrI()
 		return true
 	end
@@ -282,10 +314,12 @@ end
 
 function Scanner:simpleToken(type)
 	self:setTokenStart()
-	return self:addToken(type,{self:consumeCurrentChar()})
+	self:initStr(self:consumeCurrentChar())
+	return self:addToken(type):incrStrI()
 end
 
 function Scanner:bracket()
+	write("bracket\n")
 	if self:checkNextChar('[') then
 		return self:incrI():multiLineString()
 	end
@@ -293,17 +327,17 @@ function Scanner:bracket()
 end
 
 function Scanner:curlyBracket()
-	self:simpleToken(TokenEnum.OpenCurlyBracket)
+	return self:simpleToken(TokenEnum.OpenCurlyBracket)
 end
 
 function Scanner:twoCharToken(singleCharToken,twoCharToken,char)
 	self:setTokenStart()
-	local str <const> = {self:consumeCurrentChar()}
+	self:initStr(self:consumeCurrentChar())
 	if self:checkCurrentChar(char) then
-		self:addCharToStr(str)
-		return self:addToken(twoCharToken,str)
+		self:consumeCharToStr()
+		return self:addToken(twoCharToken)
 	end
-	return self:addToken(singleCharToken,str)
+	return self:addToken(singleCharToken)
 end
 
 function Scanner:minus()
@@ -322,40 +356,36 @@ function Scanner:star()
 	return self:twoCharToken(TokenEnum.Star, TokenEnum.StarAssignment,"=")
 end
 
-function Scanner:curlyBracket()
-    return self:simpleToken(TokenEnum.curlyBracket)
-end
-
 function Scanner:closingCurlyBracket()
-    return self:simpleToken(TokenEnum.closingCurlyBracket)
+    return self:simpleToken(TokenEnum.ClosingCurlyBracket)
 end
 
 function Scanner:parenthesis()
-    return self:simpleToken(TokenEnum.parenthesis)
+    return self:simpleToken(TokenEnum.OpenParenthesis)
 end
 
 function Scanner:closingParenthesis()
-    return self:simpleToken(TokenEnum.closingParenthesis)
+    return self:simpleToken(TokenEnum.ClosingParenthesis)
 end
 
 function Scanner:closingBracket()
-    return self:simpleToken(TokenEnum.closingBracket)
+    return self:simpleToken(TokenEnum.ClosingBracket)
 end
 
 function Scanner:colon()
-    return self:simpleToken(TokenEnum.colon)
+    return self:simpleToken(TokenEnum.Colon)
 end
 
 function Scanner:semiColon()
-    return self:simpleToken(TokenEnum.semiColon)
+    return self:simpleToken(TokenEnum.SemiColon)
 end
 
 function Scanner:period()
-    return self:simpleToken(TokenEnum.period)
+    return self:simpleToken(TokenEnum.Period)
 end
 
 function Scanner:comma()
-    return self:simpleToken(TokenEnum.comma)
+    return self:simpleToken(TokenEnum.Comma)
 end
 
 function Scanner:bang()
@@ -394,9 +424,9 @@ local digits <const> = {
 	["9"] = true
 }
 
-function Scanner:keywordEnding(str)
+function Scanner:keywordEnding()
 	if self:checkLiteral() then
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 		return false
 	end
 	return true
@@ -404,44 +434,45 @@ end
 
 function Scanner:scanThroughKeyWord()
 	self:setTokenStart()
-	local str = {self:consumeCurrentChar()}
-	self:loopThroughToken(self.keywordEnding,str)
-	return str
+	self:initStr(self:consumeCurrentChar())
+	self:loopThroughToken(self.keywordEnding)
+	return self
 end
 
-local function checkKeyword(keyword,str)
-	return length(keyword) == #str and keyword == concat(str)
+function Scanner:checkKeyword(keyword)
+	return length(keyword) == self.strI - 1 and keyword == concat(self.str)
 end
 
 function Scanner:checkKeyWord(keyword,keywordType)
-	local str <const> = self:scanThroughKeyWord()
-	return checkKeyword(keyword,str) and self:addToken(keywordType,str) or self:addToken(TokenEnum.Identifier,str)
+	self:scanThroughKeyWord()
+	self:truncateStr()
+	return self:checkKeyword(keyword) and self:addToken(keywordType) or self:addToken(TokenEnum.Identifier)
 end
 
 function Scanner:checkMultipleKeyWords(keyWords)
-	local str <const> = self:scanThroughKeyWord()
+	self:scanThroughKeyWord()
 	for keyword,tokenType in pairs(keyWords) do
-		if checkKeyword(keyword,str) then return self:addToken(tokenType,str) end
+		if self:checkKeyword(keyword,str) then return self:addToken(tokenType) end
 	end
-	return self:addToken(TokenEnum.Identifier,str)
+	return self:addToken(TokenEnum.Identifier)
 end
 
-function Scanner:loopThroughDigit(str)
+function Scanner:loopThroughDigit()
 	while self:checkCurrentCharMatchTable(digits) do
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 	end
 	return self
 end
 
 function Scanner:digit()
 	self:setTokenStart()
-	local str <const> = {self:consumeCurrentChar()}
-	self:loopThroughDigit(str)
+	self:initStr(self:consumeCurrentChar())
+	self:loopThroughDigit()
 	if(self:checkCurrentChar(".") and self:checkNextCharMatchTable(digits)) then
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 	end
-	self:loopThroughDigit(str)
-	return self:addToken(TokenEnum.Digit,str)
+	self:loopThroughDigit()
+	return self:addToken(TokenEnum.Digit)
 end
 
 function Scanner:scanAnd()
@@ -504,13 +535,21 @@ function Scanner:global()
 	return self:checkKeyWord("global",TokenEnum.Global)
 end
 
+function Scanner:scanDo()
+	return self:checkKeyWord("do",TokenEnum.Do)
+end
+
 function Scanner:checkLiteral()
 	return not self:checkLimit() and self:checkCurrentCharMatchTable(alpha) or self:checkCurrentCharMatchTable(digits) or self:checkCurrentChar("_")
 end
 
-function Scanner:literalEnding(str)
+function Scanner:scanPoundSign()
+	return self:simpleToken(TokenEnum.PoundSign)
+end
+
+function Scanner:literalEnding()
 	if self:checkLiteral() then
-		self:addCharToStr(str)
+		self:consumeCharToStr()
 		return false
 	end
 	return true
@@ -518,9 +557,9 @@ end
 
 function Scanner:literal()
 	self:setTokenStart()
-	local str <const> = {self:consumeCurrentChar()}
-	self:loopThroughToken(self.literalEnding,str)
-	self:addToken(TokenEnum.Identifier,str)
+	self:initStr(self:consumeCurrentChar())
+	self:loopThroughToken(self.literalEnding)
+	self:addToken(TokenEnum.Identifier)
 	return self
 end
 
@@ -573,7 +612,9 @@ local charsToTokenize <const> = {
 	["r"] = Scanner.scanR,
 	["e"] = Scanner.scanE,
 	["g"] = Scanner.global,
-	["m"] = Scanner.mutable
+	["m"] = Scanner.mutable,
+	['d'] = Scanner.scanDo,
+	["#"] = Scanner.scanPoundSign
 }
 
 function Scanner:scanCharArray()
@@ -584,14 +625,14 @@ function Scanner:scanCharArray()
 		elseif self:checkLiteral() then
 			self:literal()
 		else
-			self:addToken(TokenEnum.Error,{"unexpected character encountered."}):incrI()
+			self:errorToken("unexpected character encountered."):incrI()
 		end
 	until self:checkLimit()
 	return self.tokens
 end
 
 function Scanner:new(charArray)
-	return setmetatable({charArray = charArray,tokens = {},i = 1, limit = #charArray,currentCol = 1,tokenCoord = TokenCoords:new(),line = 1},self)
+	return setmetatable({charArray = charArray,tokens = {},str = {},strI = 1,i = 1, limit = #charArray,currentCol = 1,tokenCoord = TokenCoords:new(),line = 1},self)
 end
 
 function Scanner.scan(charArray)

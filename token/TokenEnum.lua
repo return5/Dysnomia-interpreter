@@ -65,5 +65,7 @@ return {
 	Immutable = "Immutable",
 	Global = "Global",
 	Error = "Error",
-	Arrow = "Arrow"
+	Arrow = "Arrow",
+	Do = "Do",
+	PoundSign = "PoundSign"
 }
