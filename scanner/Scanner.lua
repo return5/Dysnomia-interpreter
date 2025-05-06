@@ -404,10 +404,12 @@ function Scanner:equal()
 end
 
 local alpha <const> =  {
-    ["a"] = true,["A"] = true,["b"] = true,["B"] = true,["c"] = true,["C"] = true,["d"] = true,["D"] = true,["e"] = true,["E"] = true,["f"] = true,["F"] = true,["g"] = true,
-    ["G"] = true,["h"] = true,["H"] = true,["i"] = true,["I"] = true,["j"] = true,["J"] = true,["k"] = true,["K"] = true,["l"] = true,["L"] = true,["m"] = true,["M"] = true,
-    ["n"] = true,["N"] = true,["o"] = true,["O"] = true,["p"] = true,["P"] = true,["q"] = true,["Q"] = true,["r"] = true,["R"] = true,["s"] = true,["S"] = true,["t"] = true,
-    ["T"] = true,["u"] = true,["U"] = true,["v"] = true,["V"] = true,["w"] = true,["W"] = true,["x"] = true,["X"] = true,["y"] = true,["Y"] = true,["z"] = true,["Z"] = true
+    ["a"] = true,["A"] = true,["b"] = true,["B"] = true,["c"] = true,["C"] = true,["d"] = true,["D"] = true,["e"] = true,
+    ["E"] = true,["f"] = true,["F"] = true,["g"] = true, ["G"] = true,["h"] = true,["H"] = true,["i"] = true,["I"] = true,
+    ["j"] = true,["J"] = true,["k"] = true,["K"] = true,["l"] = true,["L"] = true,["m"] = true,["M"] = true,["n"] = true,
+    ["N"] = true,["o"] = true,["O"] = true,["p"] = true,["P"] = true,["q"] = true,["Q"] = true,["r"] = true,["R"] = true,
+    ["s"] = true,["S"] = true,["t"] = true, ["T"] = true,["u"] = true,["U"] = true,["v"] = true,["V"] = true,["w"] = true,
+    ["W"] = true,["x"] = true,["X"] = true,["y"] = true,["Y"] = true,["z"] = true,["Z"] = true
 }
 
 local digits <const> = {
