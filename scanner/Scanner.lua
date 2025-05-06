@@ -402,11 +402,7 @@ function Scanner:scanThroughKeyWord()
 end
 
 local function checkKeyword(keyword,str)
-	if length(keyword) == #str then
-		local tokenStr <const> = concat(str)
-		if keyword == tokenStr then return true end
-	end
-	return false
+	return length(keyword) == #str and keyword == concat(str)
 end
 
 function Scanner:checkKeyWord(keyword,keywordType)
