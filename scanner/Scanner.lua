@@ -564,7 +564,7 @@ function Scanner:new(charArray)
 	return setmetatable({charArray = charArray,tokens = {},i = 1, limit = #charArray,currentCol = 1,tokenCoord = TokenCoords:new(),line = 1},self)
 end
 
-function Scanner:scan(charArray)
+function Scanner.scan(charArray)
 	return Scanner:new(charArray):scanCharArray()
 end
 
