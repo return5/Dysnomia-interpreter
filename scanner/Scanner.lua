@@ -13,10 +13,8 @@ local Token <const> = require('token.Token')
 local TokenCoords <const> = require('token.TokenCoords')
 
 local concat <const> = table.concat
-local error <const> = error
 local length <const> = string.len
 local pairs <const> = pairs
-local write = io.write
 
 local setmetatable <const> = setmetatable
 
@@ -385,7 +383,7 @@ local digits <const> = {
 }
 
 function Scanner:keywordEnding(str)
-	if self:checkCurrentCharMatchTable(alpha) or self:checkCurrentCharMatchTable(digits) or self:checkCurrentChar("_") then
+	if self:checkLiteral() then
 		self:addCharToStr(str)
 		return false
 	end
@@ -494,6 +492,26 @@ function Scanner:global()
 	return self:checkKeyWord("global",TokenEnum.Global)
 end
 
+function Scanner:checkLiteral()
+	return not self:checkLimit() and self:checkCurrentCharMatchTable(alpha) or self:checkCurrentCharMatchTable(digits) or self:checkCurrentChar("_")
+end
+
+function Scanner:literalEnding(str)
+	if self:checkLiteral() then
+		self:addCharToStr(str)
+		return false
+	end
+	return true
+end
+
+function Scanner:literal()
+	self:setTokenStart()
+	local str <const> = {self:consumeCurrentChar()}
+	self:loopThroughToken(self.literalEnding,str)
+	self:addToken(TokenEnum.Identifier,str)
+	return self
+end
+
 local charsToTokenize <const> = {
 	['-'] = Scanner.minus,
 	["'"] = Scanner.singleQuote,
@@ -551,8 +569,10 @@ function Scanner:scanCharArray()
 		local currentChar <const> = self:getCurrentChar()
 		if charsToTokenize[currentChar] then
 			charsToTokenize[currentChar](self)
+		elseif self:checkLiteral() then
+			self:literal()
 		else
-			self:consumeCurrentChar()
+			self:addToken(TokenEnum.Error,{"unexpected character encountered."}):incrI()
 		end
 	until self:checkLimit()
 	return self.tokens
