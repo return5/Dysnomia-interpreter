@@ -440,10 +440,6 @@ function Scanner:scanAnd()
 	return self:checkKeyWord("and",TokenEnum.And)
 end
 
-function Scanner:scanIf()
-    return self:checkKeyWord("if",TokenEnum.If)
-end
-
 function Scanner:class()
     return self:checkKeyWord("class",TokenEnum.Class)
 end
@@ -484,6 +480,22 @@ function Scanner:scanT()
 	return self:checkMultipleKeyWords({["true"] = TokenEnum.True,["then"] = TokenEnum.Then})
 end
 
+function Scanner:scanC()
+	return self:checkMultipleKeyWords({['class'] = TokenEnum.Class,['const'] = TokenEnum.Const})
+end
+
+function Scanner:scanI()
+	return self:checkMultipleKeyWords(({['if'] = Token.If,['immutable'] = TokenEnum.Immutable}))
+end
+
+function Scanner:mutable()
+	return self:checkKeyWord("mutable",TokenEnum.Mutable)
+end
+
+function Scanner:global()
+	return self:checkKeyWord("global",TokenEnum.Global)
+end
+
 local charsToTokenize <const> = {
 	['-'] = Scanner.minus,
 	["'"] = Scanner.singleQuote,
@@ -522,8 +534,8 @@ local charsToTokenize <const> = {
 	["a"] = Scanner.scanAnd,
 	["l"] = Scanner.scanLocal,
 	["o"] = Scanner.scanOr,
-	["i"] = Scanner.scanIf,
-	["c"] = Scanner.class,
+	["i"] = Scanner.scanI,
+	["c"] = Scanner.scanC,
 	["w"] = Scanner.scanWhile,
 	["t"] = Scanner.scanT,
 	["n"] = Scanner.scanNil,
@@ -531,11 +543,12 @@ local charsToTokenize <const> = {
 	["s"] = Scanner.scanSelf,
 	["f"] = Scanner.scanF,
 	["r"] = Scanner.scanR,
-	["e"] = Scanner.scanE
-
+	["e"] = Scanner.scanE,
+	["g"] = Scanner.global,
+	["m"] = Scanner.mutable
 }
 
-function Scanner:scanFile()
+function Scanner:scanCharArray()
 	repeat
 		local currentChar <const> = self:getCurrentChar()
 		if charsToTokenize[currentChar] then
@@ -551,4 +564,8 @@ function Scanner:new(charArray)
 	return setmetatable({charArray = charArray,tokens = {},i = 1, limit = #charArray,currentCol = 1,tokenCoord = TokenCoords:new(),line = 1},self)
 end
 
-return Scanner
+function Scanner:scan(charArray)
+	return Scanner:new(charArray):scanCharArray()
+end
+
+return {scan = Scanner.scan}

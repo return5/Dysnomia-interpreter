@@ -59,5 +59,10 @@ return {
 	End = "End",
 	Function = "Function",
 	Then = "Then",
-	Local = "Local"
+	Local = "Local",
+	Const = "Const",
+	Mutable = "Mutable",
+	Immutable = "Immutable",
+	Global = "Global",
+
 }
