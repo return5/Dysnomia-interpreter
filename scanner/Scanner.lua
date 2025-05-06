@@ -198,11 +198,20 @@ function Scanner:scanComment()
 	return self:loopThroughToken(commentEnding,str)
 end
 
-function Scanner:minus()
+function Scanner:arrow()
+	self:setTokenStart()
+	local str <const> = {self:consumeCurrentChar(),self:consumeCurrentChar()}
+	return self:addToken(TokenEnum.Arrow,str)
+end
+
+function Scanner:hyphen()
 	if self:checkNextChar("-") then
 		return self:scanComment()
 	end
-	return self:negativeSign()
+	if self:checkNextChar(">") then
+		return self:arrow()
+	end
+	return self:minus()
 end
 
 function Scanner:loopThroughToken(ending,str)
@@ -294,7 +303,7 @@ function Scanner:twoCharToken(singleCharToken,twoCharToken,char)
 	return self:addToken(singleCharToken,str)
 end
 
-function Scanner:negativeSign()
+function Scanner:minus()
 	return self:twoCharToken(TokenEnum.Minus, TokenEnum.MinusAssignment,"=")
 end
 
@@ -513,7 +522,7 @@ function Scanner:literal()
 end
 
 local charsToTokenize <const> = {
-	['-'] = Scanner.minus,
+	['-'] = Scanner.hyphen,
 	["'"] = Scanner.singleQuote,
 	['"'] = Scanner.doubleQuote,
 	["\n"] = Scanner.newLine,

@@ -22,7 +22,7 @@ local function strToCharArray(str)
 end
 
 local function main()
-	local str <const> = 'world abc hello--this is a comment'
+	local str <const> = 'world abc hello --this is a string\n (a,b) -> return a + b'
 	local tokens <const> = Scanner.scan(strToCharArray(str))
 	for i=1,#tokens,1 do
 		io.write(i,":: ")
