@@ -12,22 +12,26 @@
 ]]
 
 local Scanner <const> = require('scanner.Scanner')
+local FileReader <const> = require('fileReader.FileReader')
 
-local function strToCharArray(str)
-	local charArray <const> = {}
-	for char in str:gmatch(".") do
-		charArray[#charArray + 1] = char
+local function repl()
+	while true do
+		local charArray <const> = FileReader.readFile()
+		local tokens <const> = Scanner.scan(charArray)
+		for i=1,#tokens, 1 do
+			tokens[i]:print()
+		end
 	end
-	return charArray
 end
 
 local function main()
-	local str <const> = 'metamethod method constructor :> super static : class'
-	local tokens <const> = Scanner.scan(strToCharArray(str))
-	for i=1,#tokens,1 do
-		io.write(i,":: ")
-		tokens[i]:print()
-	end
+	repl()
+	--local str <const> = 'metamethod method constructor :> super static : class'
+	--local tokens <const> = Scanner.scan(strToCharArray(str))
+	--for i=1,#tokens,1 do
+	--	io.write(i,":: ")
+	--	tokens[i]:print()
+	--end
 end
 
 

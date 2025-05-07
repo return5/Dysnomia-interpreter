@@ -15,13 +15,13 @@ local TokenCoords <const> = require('token.TokenCoords')
 local concat <const> = table.concat
 local length <const> = string.len
 local pairs <const> = pairs
-local write <const> = io.write
 
 local setmetatable <const> = setmetatable
 
 local Scanner <const> = {type = "Scanner"}
 Scanner.__index = Scanner
 _ENV = Scanner
+
 
 function Scanner:initStr(char)
 	self.str[1] = char
@@ -284,7 +284,7 @@ local function stringEnding(char,ending)
 			return true
 		end
 		if self:errorOnLimit(self.i,"reached end of file looking for closing " .. ending) then self:incrI() return true end
-		self:addCharToStr(str)
+		self:consumeCharToStr(str)
 		return false
 	end
 end
@@ -304,7 +304,7 @@ function Scanner:multiLineStringEnding(str)
 		return true
 	end
 	if self:errorOnLimit(self.i,"reached end of file while searching for closing ']'") then self:incrI() return true end
-	self:addCharToStr(str)
+	self:consumeCharToStr(str)
 	return false
 end
 
@@ -632,12 +632,25 @@ function Scanner:scanCharArray()
 	return self.tokens
 end
 
-function Scanner:new(charArray)
-	return setmetatable({charArray = charArray,tokens = {},str = {},strI = 1,i = 1, limit = #charArray,currentCol = 1,tokenCoord = TokenCoords:new(),line = 1},self)
+function Scanner:new()
+	return setmetatable({charArray = {},tokens = {},str = {},strI = 1,i = 1, limit = 1,currentCol = 1,tokenCoord = TokenCoords:new(),line = 1},self)
 end
 
+function Scanner:init(charArray)
+	self.charArray = charArray
+	self.tokens = {}
+	self.strI = 1
+	self.i = 1
+	self. limit = #charArray
+	self.currentCol = 1
+	self.line = 1
+	return self
+end
+
+local scanner <const> = Scanner:new()
+
 function Scanner.scan(charArray)
-	return Scanner:new(charArray):scanCharArray()
+	return scanner:init(charArray):scanCharArray()
 end
 
 return {scan = Scanner.scan}
