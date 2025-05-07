@@ -13,14 +13,16 @@
 
 local Scanner <const> = require('scanner.Scanner')
 local FileReader <const> = require('fileReader.FileReader')
+local Compiler <const> = require('compiler.Compiler')
 
 local function repl()
 	while true do
 		local charArray <const> = FileReader.readLine()
 		local tokens <const> = Scanner.scan(charArray)
-		for i=1,#tokens, 1 do
-			tokens[i]:print()
-		end
+		Compiler.compile(tokens)
+		--for i=1,#tokens, 1 do
+		--	tokens[i]:print()
+		--end
 	end
 end
 
