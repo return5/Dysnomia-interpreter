@@ -20,20 +20,16 @@ local function repl()
 		local charArray <const> = FileReader.readLine()
 		local tokens <const> = Scanner.scan(charArray)
 		Compiler.compile(tokens)
-		--for i=1,#tokens, 1 do
-		--	tokens[i]:print()
-		--end
 	end
 end
 
 local function main()
-	repl()
-	--local str <const> = 'metamethod method constructor :> super static : class'
-	--local tokens <const> = Scanner.scan(strToCharArray(str))
-	--for i=1,#tokens,1 do
-	--	io.write(i,":: ")
-	--	tokens[i]:print()
-	--end
+--	repl()
+	local charArray <const> = FileReader.readFile(arg[1])
+	local tokens <const> = Scanner.scan(charArray)
+	for i=1,#tokens, 1 do
+		tokens[i]:print()
+	end
 end
 
 

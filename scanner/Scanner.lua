@@ -15,6 +15,7 @@ local TokenCoords <const> = require('token.TokenCoords')
 local concat <const> = table.concat
 local length <const> = string.len
 local pairs <const> = pairs
+local write <const> = io.write
 
 local setmetatable <const> = setmetatable
 
@@ -501,6 +502,14 @@ function Scanner:scanLocal()
 	return self:checkKeyWord("local",TokenEnum.Local)
 end
 
+function Scanner:scanOr()
+	return self:checkKeyWord("or",TokenEnum.Or)
+end
+
+function Scanner:record()
+	return self:checkKeyWord("Record",TokenEnum.Record)
+end
+
 function Scanner:scanF()
 	return self:checkMultipleKeyWords({["for"] = TokenEnum.For,["false"] = TokenEnum.False,["function"] = TokenEnum.Function})
 end
@@ -510,7 +519,7 @@ function Scanner:scanE()
 end
 
 function Scanner:scanR()
-	return self:checkMultipleKeyWords({["return"] = TokenEnum.Return,["record"] = TokenEnum.Record,["repeat"] = TokenEnum.Repeat})
+	return self:checkMultipleKeyWords({["return"] = TokenEnum.Return,["repeat"] = TokenEnum.Repeat})
 end
 
 function Scanner:scanT()
@@ -526,7 +535,7 @@ function Scanner:scanS()
 end
 
 function Scanner:scanI()
-	return self:checkMultipleKeyWords(({['if'] = Token.If,['immutable'] = TokenEnum.Immutable}))
+	return self:checkMultipleKeyWords(({['if'] = TokenEnum.If,['immutable'] = TokenEnum.Immutable}))
 end
 
 function Scanner:scanM()
@@ -616,7 +625,8 @@ local charsToTokenize <const> = {
 	["g"] = Scanner.global,
 	["m"] = Scanner.scanM,
 	['d'] = Scanner.scanDo,
-	["#"] = Scanner.scanPoundSign
+	["#"] = Scanner.scanPoundSign,
+	["R"] = Scanner.record
 }
 
 function Scanner:scanCharArray()

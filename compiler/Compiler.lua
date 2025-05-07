@@ -363,6 +363,7 @@ function Compiler:loopTokens()
 		parseRules[self:getCurrentToken().type](self)
 		self:advance()
 	end
+	return self
 end
 
 function Compiler:new()
