@@ -26,12 +26,15 @@ local function strToCharArray(str)
 end
 
 local function getFileStr(fileName)
-	if not fileName then return read("l") end
 	local file <const> = open(fileName,"r+")
 	if not file then error("error: can not open file: " .. fileName) end
 	local fileStr <const> = file:read("*a")
 	file:close()
 	return fileStr
+end
+
+function FileReader.readLine()
+	return strToCharArray(read("l"))
 end
 
 function FileReader.readFile(file)
@@ -40,4 +43,4 @@ function FileReader.readFile(file)
 end
 
 
-return {readFile = FileReader.readFile}
+return {readFile = FileReader.readFile, readLine = FileReader.readLine}
