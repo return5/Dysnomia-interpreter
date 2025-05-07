@@ -15,7 +15,7 @@ local gmatch <const> = string.gmatch
 
 local FileReader <const> = {type = "FileReader"}
 FileReader.__index = FileReader
-_ENv = FileReader
+_ENV = FileReader
 
 local function strToCharArray(str)
 	local charArray <const> = {}
