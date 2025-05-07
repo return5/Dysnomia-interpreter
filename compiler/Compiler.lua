@@ -277,8 +277,6 @@ function Compiler:static()
 
 end
 
-
-
 local parseRules <const> = {
 	[TokenEnum.Comment] = Compiler.comment,
 	[TokenEnum.String] = Compiler.string,
@@ -367,12 +365,21 @@ function Compiler:loopTokens()
 	end
 end
 
-function Compiler:new(tokens)
-	return setmetatable({tokens = tokens,i = 1,limit = #tokens},self)
+function Compiler:new()
+	return setmetatable({tokens = {},i = 1,limit = 1},self)
 end
 
+function Compiler:init(tokens)
+	self.tokens = tokens
+	self.i = 1
+	self.limit = #tokens
+	return self
+end
+
+local compiler <const> = Compiler:new()
+
 function Compiler.compile(tokens)
-	return Compiler:new(tokens):loopTokens()
+	return compiler:init(tokens):loopTokens()
 end
 
 return {compile = Compiler.compile}
