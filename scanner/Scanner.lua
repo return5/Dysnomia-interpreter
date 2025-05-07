@@ -191,7 +191,7 @@ function Scanner:multiLineCommentEnding()
 	return false
 end
 
-function Scanner:countMultiLineCommentEqualSigns(str)
+function Scanner:countMultiLineCommentEqualSigns()
 	self:consumeCharToStr()
 	self.endingCount = 1
 	self.runningCount = 0
@@ -440,20 +440,21 @@ function Scanner:scanThroughKeyWord()
 	return self
 end
 
-function Scanner:checkKeyword(keyword)
+function Scanner:checkKeyWordMatch(keyword)
 	return length(keyword) == self.strI - 1 and keyword == concat(self.str)
 end
 
 function Scanner:checkKeyWord(keyword,keywordType)
 	self:scanThroughKeyWord()
 	self:truncateStr()
-	return self:checkKeyword(keyword) and self:addToken(keywordType) or self:addToken(TokenEnum.Identifier)
+	return self:checkKeyWordMatch(keyword) and self:addToken(keywordType) or self:addToken(TokenEnum.Identifier)
 end
 
 function Scanner:checkMultipleKeyWords(keyWords)
 	self:scanThroughKeyWord()
+	self:truncateStr()
 	for keyword,tokenType in pairs(keyWords) do
-		if self:checkKeyword(keyword) then return self:addToken(tokenType) end
+		if self:checkKeyWordMatch(keyword) then return self:addToken(tokenType) end
 	end
 	return self:addToken(TokenEnum.Identifier)
 end
