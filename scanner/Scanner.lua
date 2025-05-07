@@ -530,7 +530,7 @@ function Scanner:scanI()
 end
 
 function Scanner:scanM()
-	return self:checkMultipleKeyWords({["mutable"] = TokenEnum.Mutable,['metamethod'] = TokenEnum.Metamethod,['method'] = TokenEnum.method})
+	return self:checkMultipleKeyWords({["mutable"] = TokenEnum.Mutable,['metamethod'] = TokenEnum.Metamethod,['method'] = TokenEnum.Method})
 end
 
 function Scanner:global()
