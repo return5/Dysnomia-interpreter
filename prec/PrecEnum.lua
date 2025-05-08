@@ -8,26 +8,16 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local Scope <const> = {type = "Scope",depth = 1}
-Scope.__index = Scope
-
-_ENV = Scope
-
-
-function Scope:beginScope()
-	self.depth = self.depth + 1
-	return self
-end
-
-function Scope:endScope()
-	self.depth = self.depth - 1
-	return self
-end
-
-
-function Scope:init()
-	self.depth = 1
-	return self
-end
-
-return Scope
+return {
+	PREC_NONE = "PREC_NONE",
+	PREC_ASSIGNMENT = "PREC_ASSIGNMENT",  -- =
+	PREC_OR = "PREC_OR",                  -- or
+	PREC_AND = "PREC_AND",                -- and
+	PREC_EQUALITY = "PREC_EQUALITY",      -- == !=
+	PREC_COMPARISON = "PREC_COMPARISON",  -- < > <= >=
+	PREC_TERM = "PREC_TERM",        	  -- + -
+	PREC_FACTOR = "PREC_FACTOR",      	  -- * /
+	PREC_UNARY = "PREC_UNARY",       	  -- ! -
+	PREC_CALL = "PREC_CALL",        	  -- . ()
+	PREC_PRIMARY = "PREC_PRIMARY",
+}

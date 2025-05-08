@@ -74,4 +74,5 @@ return {
 	Inherent = "Inherent",
 	Constructor = "Constructor",
 	Static = "Static",
+	NewLine = "NewLine"
 }

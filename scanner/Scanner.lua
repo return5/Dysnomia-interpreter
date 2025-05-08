@@ -129,7 +129,7 @@ function Scanner:incrLine()
 end
 
 function Scanner:newLine()
-	self:consumeCurrentChar()
+	self:simpleToken(TokenEnum.NewLine)
 	return self:incrLine()
 end
 

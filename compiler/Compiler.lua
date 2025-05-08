@@ -23,12 +23,19 @@ function Compiler:synchronize()
 end
 
 function Compiler:statement()
+	if self:checkCurrentToken(TokenEnum.Then) or self:checkCurrentToken(TokenEnum.Do) then
+		Scope:beginScope()
+		self:block()
+		Scope:endScope()
+	else
+
+	end
 
 end
 
 function Compiler:declaration()
-	if self:checkCurrentToken(TokenEnum.Local) then
-		self:localDeclaration()
+	if self:checkCurrentToken(TokenEnum.Local) or self:checkCurrentToken(TokenEnum.Global) or self:checkCurrentToken(TokenEnum.Identifier) then
+		self:varDeclaration() --TODO
 	else
 		self:statement()
 	end
@@ -56,13 +63,24 @@ function Compiler:getCurrentToken()
 	return self.tokens[self.i]
 end
 
-function Compiler:advance()
+function Compiler:consumeCurrentToken()
+	local token <const> = self:getCurrentToken()
 	self.i = self.i + 1
+	return token
+end
+
+function Compiler:advance()
+	self.previous = self:getCurrentToken()
+	while self:checkLimit() and self:consumeCurrentToken().type == TokenEnum.Error do
+		self:errorAtCurrent()
+	end
 	return self
 end
 
 function Compiler:loopTokens()
-	while self:checkLimit() do end
+	while self:checkLimit() do
+		self:declaration()
+	end
 	return self
 end
 

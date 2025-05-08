@@ -8,26 +8,24 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local Scope <const> = {type = "Scope",depth = 1}
-Scope.__index = Scope
-
-_ENV = Scope
-
-
-function Scope:beginScope()
-	self.depth = self.depth + 1
-	return self
-end
-
-function Scope:endScope()
-	self.depth = self.depth - 1
-	return self
-end
-
-
-function Scope:init()
-	self.depth = 1
-	return self
-end
-
-return Scope
+return {
+	OP_CONSTANT = "OP_CONSTANT",
+	OP_NEGATE = "OP_NEGATE",
+	OP_PRINT = "OP_PRINT",
+	OP_ADD = "OP_ADD",
+	OP_SUBTRACT = "OP_SUBTRACT",
+	OP_MULTIPLY = "OP_MULTIPLY",
+	OP_DIVIDE = "OP_DIVIDE",
+	OP_RETURN = "OP_RETURN",
+	OP_TRUE = "OP_TRUE",
+	OP_FALSE = "OP_FALSE",
+	OP_NIL = "OP_NIL",
+	OP_NOT = "OP_NOT",
+	OP_EQUAL = "OP_EQUAL",
+	OP_POP = "OP_POP",
+	OP_GREATER = "OP_GREATER",
+	OP_DEFINE_GLOBAL = "OP_DEFINE_GLOBAL",
+	OP_GET_GLOBAL = "OP_GET_GLOBAL",
+	OP_SET_GLOBAL = "OP_SET_GLOBAL",
+	OP_LESS = "OP_LESS",
+}
