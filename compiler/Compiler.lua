@@ -85,15 +85,13 @@ function Compiler:loopTokens()
 end
 
 function Compiler:new()
-	return setmetatable({tokens = {},i = 1,limit = 1},self)
+	return setmetatable({locals = {},scopeDepth = 1},self)
 end
 
-function Compiler:init(tokens)
-	self.tokens = tokens
-	self.i = 1
-	self.limit = #tokens
+function Compiler:init()
+	self.locals = {}
+	self.scopeDepth = 1
 	Scope:inti()
-	self.panicMode = false
 	return self
 end
 
