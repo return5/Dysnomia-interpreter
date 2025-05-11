@@ -27,7 +27,6 @@ end
 local function main()
 --	repl()
 	local charArray <const> = FileReader.readFile(arg[1])
-	Scanner.init(charArray)
 	local tokens <const> = Scanner.scan(charArray)
 end
 

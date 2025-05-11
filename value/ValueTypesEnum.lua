@@ -8,30 +8,9 @@
     You should have received a copy of the GNU General Public License along with Dysnomia Interpreter. If not, see <https://www.gnu.org/licenses/>.
 ]]
 
-local Value <const> = require('value.Value')
-
-local setmetatable <const> = setmetatable
-local Chunk <const> = {type = "Chunk"}
-Chunk.__index = Chunk
-
-_ENV = Chunk
-
-local function addToArray(array,val)
-	array[#array + 1] = val
-end
-
-function Chunk:addConstant(value)
-	addToArray(self.constants,value)
-end
-
-function Chunk:writeChunk(byte,line)
-	addToArray(self.lines,line)
-	addToArray(self.code,byte)
-	return self
-end
-
-function Chunk:new()
-	return setmetatable({code = {},lines = {},constants = {}},self)
-end
-
-return Chunk
+return {
+	VAL_NIL = "VAL_NIL",
+	VAL_BOOL = "VAL_BOOL",
+	VAL_NUMBER = "VAL_NUMBER",
+	VAL_OBJ = "VAL_OBJ",
+}

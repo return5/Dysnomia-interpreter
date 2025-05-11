@@ -9,29 +9,27 @@
 ]]
 
 local Value <const> = require('value.Value')
-
+local ValTypes <const> = require('value.ValueTypesEnum')
 local setmetatable <const> = setmetatable
-local Chunk <const> = {type = "Chunk"}
-Chunk.__index = Chunk
 
-_ENV = Chunk
+local ObjValue <const> = {type = ValTypes.VAL_OBJ}
+ObjValue.__index = ObjValue
 
-local function addToArray(array,val)
-	array[#array + 1] = val
+setmetatable(ObjValue,Value)
+
+_ENV = ObjValue
+
+function ObjValue:print()
+
 end
 
-function Chunk:addConstant(value)
-	addToArray(self.constants,value)
+function ObjValue:compare(a)
+	return a.type == self.type and a.as == self.as
 end
 
-function Chunk:writeChunk(byte,line)
-	addToArray(self.lines,line)
-	addToArray(self.code,byte)
-	return self
+function ObjValue:new(as)
+	local o <const> = setmetatable(Value:new(as),self)
+	return o
 end
 
-function Chunk:new()
-	return setmetatable({code = {},lines = {},constants = {}},self)
-end
-
-return Chunk
+return ObjValue
